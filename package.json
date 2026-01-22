@@ -1,5 +1,5 @@
 {
-  "name": "easy-git-cli",
+  "name": "@wassupsong/easy-git-cli",
   "version": "1.0.0",
   "description": "An interactive CLI tool to make Git easier to use",
   "main": "dist/index.js",
