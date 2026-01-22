@@ -1,0 +1,20 @@
+# npm 배포 시 제외할 파일들
+src/
+tests/
+*.test.ts
+*.spec.ts
+.git
+.gitignore
+tsconfig.json
+jest.config.js
+.vscode/
+.idea/
+coverage/
+*.log
+.DS_Store
+TESTING.md
+TEST_SUMMARY.md
+CONTRIBUTING.md
+EXAMPLES.md
+.npm/
+.jest-cache/

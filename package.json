@@ -1,0 +1,64 @@
+{
+  "name": "easy-git-cli",
+  "version": "1.0.0",
+  "description": "An interactive CLI tool to make Git easier to use",
+  "main": "dist/index.js",
+  "bin": {
+    "easy-git": "./dist/index.js",
+    "eg": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm run build && npm test",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "git",
+    "cli",
+    "interactive",
+    "terminal",
+    "git-cli",
+    "easy-git",
+    "git-tool",
+    "developer-tools"
+  ],
+  "author": "Song Hwaseob <your-email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wassupss/easy-git-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/wassupss/easy-git-cli/issues"
+  },
+  "homepage": "https://github.com/wassupss/easy-git-cli#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "boxen": "^5.1.2",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.5",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.5",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,286 @@
+import ora from "ora";
+import {
+  GitExecutor,
+  GitStatus,
+  GitLog,
+  GitBranch,
+  GitRemote,
+} from "../utils/git-executor";
+
+export class GitService {
+  private git: GitExecutor;
+
+  constructor(baseDir?: string) {
+    this.git = new GitExecutor(baseDir || process.cwd());
+  }
+
+  async isGitRepository(): Promise<boolean> {
+    return await this.git.isGitRepository();
+  }
+
+  async init(): Promise<void> {
+    const spinner = ora("Git 저장소 초기화 중...").start();
+    try {
+      await this.git.init();
+      spinner.succeed("Git 저장소가 초기화되었습니다.");
+    } catch (error: any) {
+      spinner.fail("초기화 실패");
+      throw error;
+    }
+  }
+
+  async getStatus(): Promise<GitStatus> {
+    return await this.git.status();
+  }
+
+  async getCurrentBranch(): Promise<string> {
+    return await this.git.currentBranch();
+  }
+
+  async add(files: string[]): Promise<void> {
+    const spinner = ora("파일 추가 중...").start();
+    try {
+      await this.git.add(files);
+      spinner.succeed(`${files.length}개 파일 추가됨`);
+    } catch (error: any) {
+      spinner.fail("파일 추가 실패");
+      throw error;
+    }
+  }
+
+  async addAll(): Promise<void> {
+    const spinner = ora("모든 파일 추가 중...").start();
+    try {
+      await this.git.addAll();
+      spinner.succeed("모든 파일 추가됨");
+    } catch (error: any) {
+      spinner.fail("파일 추가 실패");
+      throw error;
+    }
+  }
+
+  async commit(message: string): Promise<void> {
+    const spinner = ora("커밋 중...").start();
+    try {
+      await this.git.commit(message);
+      spinner.succeed("커밋 완료");
+    } catch (error: any) {
+      spinner.fail("커밋 실패");
+      throw error;
+    }
+  }
+
+  async push(remote: string = "origin", branch?: string): Promise<void> {
+    const spinner = ora("푸시 중...").start();
+    try {
+      if (branch) {
+        await this.git.push(remote, branch);
+      } else {
+        await this.git.push();
+      }
+      spinner.succeed("푸시 완료");
+    } catch (error: any) {
+      spinner.fail("푸시 실패");
+      throw error;
+    }
+  }
+
+  async pull(remote: string = "origin", branch?: string): Promise<void> {
+    const spinner = ora("풀 중...").start();
+    try {
+      if (branch) {
+        await this.git.pull(remote, branch);
+      } else {
+        await this.git.pull();
+      }
+      spinner.succeed("풀 완료");
+    } catch (error: any) {
+      spinner.fail("풀 실패");
+      throw error;
+    }
+  }
+
+  async getBranches(): Promise<GitBranch> {
+    return await this.git.branch();
+  }
+
+  async createBranch(branchName: string): Promise<void> {
+    const spinner = ora(`브랜치 '${branchName}' 생성 중...`).start();
+    try {
+      await this.git.createBranch(branchName);
+      spinner.succeed(`브랜치 '${branchName}' 생성 및 전환됨`);
+    } catch (error: any) {
+      spinner.fail("브랜치 생성 실패");
+      throw error;
+    }
+  }
+
+  async switchBranch(branchName: string): Promise<void> {
+    const spinner = ora(`브랜치 '${branchName}'로 전환 중...`).start();
+    try {
+      await this.git.checkout(branchName);
+      spinner.succeed(`브랜치 '${branchName}'로 전환됨`);
+    } catch (error: any) {
+      spinner.fail("브랜치 전환 실패");
+      throw error;
+    }
+  }
+
+  async deleteBranch(
+    branchName: string,
+    force: boolean = false
+  ): Promise<void> {
+    const spinner = ora(`브랜치 '${branchName}' 삭제 중...`).start();
+    try {
+      await this.git.deleteBranch(branchName, force);
+      spinner.succeed(`브랜치 '${branchName}' 삭제됨`);
+    } catch (error: any) {
+      spinner.fail("브랜치 삭제 실패");
+      throw error;
+    }
+  }
+
+  async getLog(maxCount: number = 10): Promise<GitLog> {
+    return await this.git.log(maxCount);
+  }
+
+  async stashSave(message?: string): Promise<void> {
+    const spinner = ora("Stash 저장 중...").start();
+    try {
+      if (message) {
+        await this.git.stash(["save", message]);
+      } else {
+        await this.git.stash();
+      }
+      spinner.succeed("Stash 저장됨");
+    } catch (error: any) {
+      spinner.fail("Stash 저장 실패");
+      throw error;
+    }
+  }
+
+  async stashPop(): Promise<void> {
+    const spinner = ora("Stash 복원 중...").start();
+    try {
+      await this.git.stash(["pop"]);
+      spinner.succeed("Stash 복원됨");
+    } catch (error: any) {
+      spinner.fail("Stash 복원 실패");
+      throw error;
+    }
+  }
+
+  async stashList(): Promise<
+    Array<{ index: number; message: string; hash: string }>
+  > {
+    return await this.git.stashList();
+  }
+
+  async stashDrop(index: number = 0): Promise<void> {
+    const spinner = ora("Stash 삭제 중...").start();
+    try {
+      await this.git.stash(["drop", `stash@{${index}}`]);
+      spinner.succeed("Stash 삭제됨");
+    } catch (error: any) {
+      spinner.fail("Stash 삭제 실패");
+      throw error;
+    }
+  }
+
+  async stashClear(): Promise<void> {
+    const spinner = ora("모든 Stash 삭제 중...").start();
+    try {
+      await this.git.stash(["clear"]);
+      spinner.succeed("모든 Stash 삭제됨");
+    } catch (error: any) {
+      spinner.fail("Stash 삭제 실패");
+      throw error;
+    }
+  }
+
+  // Remote 관련 메서드
+  async getRemotes(): Promise<GitRemote[]> {
+    return await this.git.getRemotes();
+  }
+
+  async addRemote(name: string, url: string): Promise<void> {
+    const spinner = ora(`원격 저장소 '${name}' 추가 중...`).start();
+    try {
+      await this.git.addRemote(name, url);
+      spinner.succeed(`원격 저장소 '${name}' 추가됨`);
+    } catch (error: any) {
+      spinner.fail("원격 저장소 추가 실패");
+      throw error;
+    }
+  }
+
+  async removeRemote(name: string): Promise<void> {
+    const spinner = ora(`원격 저장소 '${name}' 제거 중...`).start();
+    try {
+      await this.git.removeRemote(name);
+      spinner.succeed(`원격 저장소 '${name}' 제거됨`);
+    } catch (error: any) {
+      spinner.fail("원격 저장소 제거 실패");
+      throw error;
+    }
+  }
+
+  async clone(repoUrl: string, localPath?: string): Promise<void> {
+    const spinner = ora("저장소 클론 중...").start();
+    try {
+      if (localPath) {
+        await this.git.clone(repoUrl, localPath);
+      } else {
+        await this.git.clone(repoUrl);
+      }
+      spinner.succeed("저장소 클론 완료");
+    } catch (error: any) {
+      spinner.fail("클론 실패");
+      throw error;
+    }
+  }
+
+  async fetchAll(): Promise<void> {
+    const spinner = ora("원격 브랜치 정보 가져오는 중...").start();
+    try {
+      await this.git.fetch();
+      spinner.succeed("Fetch 완료");
+    } catch (error: any) {
+      spinner.fail("Fetch 실패");
+      throw error;
+    }
+  }
+
+  async hasRemoteUpdates(): Promise<boolean> {
+    try {
+      await this.git.fetch();
+      const status = await this.git.status();
+      return status.behind > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async switchBranchWithPull(branchName: string): Promise<void> {
+    const spinner = ora(`브랜치 '${branchName}'로 전환 중...`).start();
+    try {
+      await this.git.checkout(branchName);
+      spinner.text = "원격 변경사항 확인 중...";
+
+      const hasUpdates = await this.hasRemoteUpdates();
+
+      if (hasUpdates) {
+        spinner.text = "원격 변경사항 가져오는 중...";
+        await this.git.pull();
+        spinner.succeed(
+          `브랜치 '${branchName}'로 전환 및 최신 코드 가져오기 완료`
+        );
+      } else {
+        spinner.succeed(`브랜치 '${branchName}'로 전환됨 (최신 상태)`);
+      }
+    } catch (error: any) {
+      spinner.fail("브랜치 전환 실패");
+      throw error;
+    }
+  }
+}
