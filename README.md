@@ -50,6 +50,42 @@ easy-git
 eg
 ```
 
+### Check Version
+
+```bash
+eg -v
+# or
+eg --version
+```
+
+### Available Commands
+
+```bash
+# Interactive mode (default)
+eg
+
+# Clone a repository
+eg clone
+
+# Custom commands (if configured)
+eg <custom-command-name>
+```
+
+## 🔔 Update Notification
+
+Easy Git CLI automatically checks for updates once a day and notifies you when a new version is available:
+
+```
+┌────────────────────────────────────────────────────────┐
+│ 🎉 새로운 버전이 출시되었습니다!                        │
+│                                                          │
+│ 현재 버전: 1.2.1                                        │
+│ 최신 버전: 1.2.2                                        │
+│                                                          │
+│ 업데이트: npm install -g @wassupsong/easy-git-cli      │
+└────────────────────────────────────────────────────────┘
+```
+
 ## 📖 기능 상세
 
 ### 1️⃣ 상태 확인 (Status)
@@ -148,44 +184,3 @@ eg
 ## 🤝 Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## 🚀 For Maintainers
-
-### Release New Version
-
-```bash
-npm run release
-```
-
-This will:
-
-- ✅ Test, build, and bump version
-- ✅ Publish to npm (you'll enter 2FA if needed)
-- ✅ Update Homebrew Formula automatically
-- ✅ Push to GitHub
-
-**No GitHub Actions needed!** Everything runs locally.
-
-See [RELEASE.md](RELEASE.md) for details.
-
-## 💡 사용 팁
-
-# Answer prompts, everything else is automated!
-
-**No GitHub Actions needed!** Everything runs locally.
-
-See [RELEASE.md](RELEASE.md) for details.
-
-## 💡 사용 팁
-
-- **빠른 작업 흐름**: Status → Add → Commit → Push
-- **브랜치 전략**: 새 기능 작업 전 브랜치 생성
-- **Stash 활용**: 브랜치 전환 전 변경사항 임시 저장
-
-## 📄 라이선스
-
-MIT
-
----
-
-Made with ❤️ for easier Git workflow

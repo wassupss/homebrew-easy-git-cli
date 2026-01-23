@@ -20,6 +20,7 @@ import { handlePR } from "./commands/pr";
 import { handleRebase } from "./commands/rebase";
 import { handleRollback } from "./commands/rollback";
 import { localeService } from "./services/locale-service";
+import { versionService } from "./services/version-service";
 
 const gitService = new GitService();
 const configService = new ConfigService();
@@ -203,6 +204,17 @@ async function showMainMenu(): Promise<void> {
 
 async function main() {
   const args = process.argv.slice(2);
+
+  // eg -v 또는 eg --version 처리
+  if (args[0] === "-v" || args[0] === "--version") {
+    versionService.displayVersion();
+    return;
+  }
+
+  // 시작 시 업데이트 확인 (백그라운드)
+  versionService.showUpdateNotification().catch(() => {
+    // 업데이트 확인 실패는 조용히 무시
+  });
 
   // eg clone 처리
   if (args[0] === "clone") {

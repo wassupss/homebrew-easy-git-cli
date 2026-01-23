@@ -75,10 +75,29 @@ async function executeAction(
       break;
 
     case "commit":
+      await handleCommit(gitService);
+      break;
+
+    case "create-commit":
       if (action.params?.message) {
         await gitService.commit(action.params.message);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.commitCreated")}`)
+        );
       } else {
-        await handleCommit(gitService);
+        const { message } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "message",
+            message: localeService.t("commit.enterMessage"),
+            validate: (input) =>
+              input.trim() ? true : localeService.t("commit.messageRequired"),
+          },
+        ]);
+        await gitService.commit(message);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.commitCreated")}`)
+        );
       }
       break;
 
@@ -91,33 +110,100 @@ async function executeAction(
       break;
 
     case "branch":
-      if (action.params?.action === "switch" && action.params?.name) {
+      await handleBranch(gitService);
+      break;
+
+    case "branch-switch":
+      if (action.params?.name) {
         await gitService.switchBranch(action.params.name);
-      } else if (action.params?.action === "switch") {
+      } else {
         await promptAndSwitchBranch(gitService);
       }
       break;
 
-    case "stash":
-      if (action.params?.action === "save") {
-        await gitService.stashSave(action.params?.message);
-        console.log(chalk.green(`✅ ${localeService.t("custom.stashSaved")}`));
-      } else if (action.params?.action === "pop") {
-        await gitService.stashPop();
-        console.log(chalk.green(`✅ ${localeService.t("custom.stashPopped")}`));
-      } else {
-        await handleStash(gitService);
+    case "branch-create":
+      if (action.params?.name) {
+        await gitService.createBranch(action.params.name);
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchCreated")}: ${
+              action.params.name
+            }`
+          )
+        );
       }
       break;
 
+    case "branch-delete":
+      if (action.params?.name) {
+        await gitService.deleteBranch(
+          action.params.name,
+          action.params?.force || false
+        );
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchDeleted")}: ${
+              action.params.name
+            }`
+          )
+        );
+      }
+      break;
+
+    case "stash":
+      await handleStash(gitService);
+      break;
+
+    case "stash-save":
+      if (action.params?.message) {
+        await gitService.stashSave(action.params.message);
+      } else {
+        await gitService.stashSave();
+      }
+      console.log(chalk.green(`✅ ${localeService.t("custom.stashSaved")}`));
+      break;
+
+    case "stash-pop":
+      await gitService.stashPop();
+      console.log(chalk.green(`✅ ${localeService.t("custom.stashPopped")}`));
+      break;
+
+    case "stash-list":
+      const stashList = await gitService.stashList();
+      if (stashList.length === 0) {
+        console.log(chalk.yellow(localeService.t("stash.empty")));
+      } else {
+        console.log(chalk.cyan.bold(`\n${localeService.t("stash.list")}\n`));
+        stashList.forEach((stash: any) => {
+          console.log(chalk.white(`${stash.index}: ${stash.message}`));
+        });
+      }
+      break;
+
+    case "stash-drop":
+      if (action.params?.index !== undefined) {
+        await gitService.stashDrop(action.params.index);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.stashDropped")}`)
+        );
+      }
+      break;
+
+    case "stash-clear":
+      await gitService.stashClear();
+      console.log(chalk.green(`✅ ${localeService.t("custom.stashCleared")}`));
+      break;
+
     case "rebase":
+      await handleRebase(gitService);
+      break;
+
+    case "rebase-branch":
       if (action.params?.branch) {
         await gitService.rebase(action.params.branch);
         console.log(
           chalk.green(`✅ ${localeService.t("custom.rebaseComplete")}`)
         );
-      } else {
-        await handleRebase(gitService);
       }
       break;
 
@@ -399,59 +485,33 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
           actions.length + 1
         }`,
         choices: [
-          { name: localeService.t("custom.actionStatus"), value: "status" },
-          { name: localeService.t("custom.actionAdd"), value: "add" },
-          { name: localeService.t("custom.actionCommit"), value: "commit" },
-          { name: localeService.t("custom.actionPush"), value: "push" },
-          { name: localeService.t("custom.actionPull"), value: "pull" },
-          { name: localeService.t("custom.actionBranch"), value: "branch" },
-          { name: localeService.t("custom.actionRebase"), value: "rebase" },
-          { name: localeService.t("custom.actionRevert"), value: "revert" },
-          { name: localeService.t("custom.actionReset"), value: "reset" },
-          {
-            name: localeService.t("custom.actionStashSave"),
-            value: "stash-save",
-          },
-          {
-            name: localeService.t("custom.actionStashPop"),
-            value: "stash-pop",
-          },
-          {
-            name: localeService.t("custom.actionDiscard"),
-            value: "discard",
-          },
-          {
-            name: localeService.t("custom.actionMerge"),
-            value: "merge",
-          },
-          {
-            name: localeService.t("custom.actionFetch"),
-            value: "fetch",
-          },
-          {
-            name: localeService.t("custom.actionCreateBranch"),
-            value: "create-branch",
-          },
-          {
-            name: localeService.t("custom.actionDeleteBranch"),
-            value: "delete-branch",
-          },
-          {
-            name: localeService.t("custom.actionTag"),
-            value: "tag",
-          },
-          {
-            name: localeService.t("custom.actionPR"),
-            value: "pr",
-          },
-          {
-            name: localeService.t("custom.actionRollback"),
-            value: "rollback",
-          },
-          {
-            name: localeService.t("custom.actionBranchManagement"),
-            value: "branch-management",
-          },
+          { name: "📊 상태 보기", value: "status" },
+          { name: "➕ 파일 추가", value: "add" },
+          { name: "📝 커밋 메뉴", value: "commit" },
+          { name: "💾 커밋 생성", value: "create-commit" },
+          { name: "⬆️  푸시", value: "push" },
+          { name: "⬇️  풀", value: "pull" },
+          { name: "🌿 브랜치 메뉴", value: "branch" },
+          { name: "🔀 브랜치 전환", value: "branch-switch" },
+          { name: "➕ 브랜치 생성", value: "branch-create" },
+          { name: "🗑️  브랜치 삭제", value: "branch-delete" },
+          { name: "📦 스태시 메뉴", value: "stash" },
+          { name: "💾 스태시 저장", value: "stash-save" },
+          { name: "📤 스태시 복원", value: "stash-pop" },
+          { name: "📋 스태시 목록", value: "stash-list" },
+          { name: "🗑️  스태시 삭제", value: "stash-drop" },
+          { name: "🧹 스태시 전체삭제", value: "stash-clear" },
+          { name: "🔄 리베이스 메뉴", value: "rebase" },
+          { name: "🔄 리베이스 실행", value: "rebase-branch" },
+          { name: "↩️  커밋 되돌리기", value: "revert" },
+          { name: "🔙 리셋", value: "reset" },
+          { name: "🗑️  변경사항 버리기", value: "discard" },
+          { name: "🔀 병합", value: "merge" },
+          { name: "📥 페치", value: "fetch" },
+          { name: "🏷️  태그 생성", value: "tag" },
+          { name: "🔧 PR 메뉴", value: "pr" },
+          { name: "⏮️  롤백 메뉴", value: "rollback" },
+          { name: "🌳 브랜치 관리 메뉴", value: "branch-management" },
         ],
       },
     ]);
@@ -466,13 +526,108 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         },
       ]);
       actions.push({ type: "add", params: { all: addAll } });
+    } else if (actionType === "create-commit") {
+      const { commitMessage } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "commitMessage",
+          message: "커밋 메시지를 입력하세요:",
+          validate: (input) =>
+            input.trim() ? true : "커밋 메시지는 필수입니다",
+        },
+      ]);
+      actions.push({
+        type: "create-commit",
+        params: { message: commitMessage },
+      });
+    } else if (actionType === "commit") {
+      actions.push({ type: "commit" });
     } else if (actionType === "stash-save") {
-      actions.push({ type: "stash", params: { action: "save" } });
+      const { stashMessage } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "stashMessage",
+          message: "스태시 메시지 (선택사항):",
+        },
+      ]);
+      actions.push({
+        type: "stash-save",
+        params: stashMessage ? { message: stashMessage } : {},
+      });
     } else if (actionType === "stash-pop") {
-      actions.push({ type: "stash", params: { action: "pop" } });
+      actions.push({ type: "stash-pop" });
+    } else if (actionType === "stash-list") {
+      actions.push({ type: "stash-list" });
+    } else if (actionType === "stash-drop") {
+      const { stashIndex } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "stashIndex",
+          message: "삭제할 스태시 인덱스:",
+          validate: (input) => {
+            const num = parseInt(input);
+            return !isNaN(num) && num >= 0
+              ? true
+              : "유효한 인덱스를 입력하세요";
+          },
+        },
+      ]);
+      actions.push({
+        type: "stash-drop",
+        params: { index: parseInt(stashIndex) },
+      });
+    } else if (actionType === "stash-clear") {
+      actions.push({ type: "stash-clear" });
+    } else if (actionType === "stash") {
+      actions.push({ type: "stash" });
+    } else if (actionType === "branch-switch") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: "전환할 브랜치 이름 (비워두면 선택 메뉴):",
+        },
+      ]);
+      actions.push({
+        type: "branch-switch",
+        params: branchName ? { name: branchName } : {},
+      });
+    } else if (actionType === "branch-create") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: "생성할 브랜치 이름:",
+          validate: (input) =>
+            input.trim() ? true : "브랜치 이름은 필수입니다",
+        },
+      ]);
+      actions.push({ type: "branch-create", params: { name: branchName } });
+    } else if (actionType === "branch-delete") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: "삭제할 브랜치 이름:",
+          validate: (input) =>
+            input.trim() ? true : "브랜치 이름은 필수입니다",
+        },
+      ]);
+      const { force } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "force",
+          message: "강제 삭제하시겠습니까?",
+          default: false,
+        },
+      ]);
+      actions.push({
+        type: "branch-delete",
+        params: { name: branchName, force },
+      });
     } else if (actionType === "branch") {
-      actions.push({ type: "branch", params: { action: "switch" } });
-    } else if (actionType === "rebase") {
+      actions.push({ type: "branch" });
+    } else if (actionType === "rebase-branch") {
       const { targetBranch } = await inquirer.prompt([
         {
           type: "input",
@@ -481,7 +636,9 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
           default: "main",
         },
       ]);
-      actions.push({ type: "rebase", params: { branch: targetBranch } });
+      actions.push({ type: "rebase-branch", params: { branch: targetBranch } });
+    } else if (actionType === "rebase") {
+      actions.push({ type: "rebase" });
     } else if (actionType === "revert") {
       const { commitHash } = await inquirer.prompt([
         {
@@ -547,39 +704,6 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
       actions.push({ type: "merge", params: { branch: branchName, noFf } });
     } else if (actionType === "fetch") {
       actions.push({ type: "fetch" });
-    } else if (actionType === "create-branch") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: localeService.t("custom.enterNewBranchName"),
-          validate: (input) =>
-            input.trim() ? true : localeService.t("custom.branchRequired"),
-        },
-      ]);
-      actions.push({ type: "create-branch", params: { name: branchName } });
-    } else if (actionType === "delete-branch") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: localeService.t("custom.enterDeleteBranchName"),
-          validate: (input) =>
-            input.trim() ? true : localeService.t("custom.branchRequired"),
-        },
-      ]);
-      const { force } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "force",
-          message: localeService.t("custom.forceDelete"),
-          default: false,
-        },
-      ]);
-      actions.push({
-        type: "delete-branch",
-        params: { name: branchName, force },
-      });
     } else if (actionType === "tag") {
       const { tagName, tagMessage } = await inquirer.prompt([
         {

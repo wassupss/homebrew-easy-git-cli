@@ -127,6 +127,13 @@ const translations: Record<Language, Record<string, string>> = {
     "cli.cloneRepo": "저장소 클론",
     "cli.customCommands": "커스텀 명령어",
 
+    // 버전
+    "version.current": "현재 버전",
+    "version.latest": "최신 버전",
+    "version.updateAvailable": "새로운 버전이 출시되었습니다!",
+    "version.updateCommand": "업데이트",
+    "version.checking": "업데이트 확인 중...",
+
     // Commit 메뉴
     "commit.selectAction": "커밋 작업을 선택하세요:",
     "commit.createNew": "💾 새 커밋 생성",
@@ -393,8 +400,11 @@ const translations: Record<Language, Record<string, string>> = {
     "custom.confirmReset":
       "설정을 기본값으로 초기화하시겠습니까? (모든 커스텀 커맨드가 삭제됩니다)",
     "custom.allFilesAdded": "모든 파일이 추가되었습니다.",
+    "custom.commitCreated": "커밋이 생성되었습니다.",
     "custom.stashSaved": "Stash 저장됨",
     "custom.stashPopped": "Stash 복원됨",
+    "custom.stashDropped": "Stash 삭제됨",
+    "custom.stashCleared": "모든 Stash가 삭제되었습니다.",
     "custom.rebaseComplete": "Rebase 완료",
     "custom.revertComplete": "커밋 되돌리기 완료",
     "custom.resetComplete": "커밋 취소 완료",
@@ -532,6 +542,13 @@ const translations: Record<Language, Record<string, string>> = {
     "cli.interactiveMode": "Interactive menu",
     "cli.cloneRepo": "Clone repository",
     "cli.customCommands": "Custom commands",
+
+    // 버전
+    "version.current": "Current version",
+    "version.latest": "Latest version",
+    "version.updateAvailable": "A new version is available!",
+    "version.updateCommand": "Update",
+    "version.checking": "Checking for updates...",
 
     // Commit 메뉴
     "commit.selectAction": "Select commit action:",
@@ -795,8 +812,11 @@ const translations: Record<Language, Record<string, string>> = {
     "custom.confirmReset":
       "Reset settings to default? (All custom commands will be deleted)",
     "custom.allFilesAdded": "All files added.",
+    "custom.commitCreated": "Commit created.",
     "custom.stashSaved": "Stash saved",
     "custom.stashPopped": "Stash popped",
+    "custom.stashDropped": "Stash dropped",
+    "custom.stashCleared": "All stashes cleared.",
     "custom.rebaseComplete": "Rebase complete",
     "custom.revertComplete": "Revert complete",
     "custom.resetComplete": "Reset complete",

@@ -7,6 +7,14 @@
 - 🍺 Homebrew distribution support with standard tap naming
 - 🛠️ `npm run release` - complete local release automation
 - 📚 Simplified documentation
+- 🔔 Automatic update notification system (checks once per day)
+- ✅ Version check command (`eg -v` or `eg --version`)
+- 📦 Version caching to avoid excessive API calls
+- ⚡ Enhanced custom commands with granular action types
+  - Separate menu openers vs direct actions (e.g., "커밋 메뉴" vs "커밋 생성")
+  - Added stash-list, stash-drop, stash-clear actions
+  - Added branch-switch, branch-create, branch-delete actions
+  - Added rebase-branch for direct rebase execution
 
 ### Changed
 
@@ -14,6 +22,7 @@
 - Formula updates automatically during release
 - Repository renamed to `homebrew-easy-git-cli` for Homebrew tap compatibility
 - Homebrew installation now uses standard tap format: `brew install wassupss/easy-git-cli/easy-git`
+- Custom commands now distinguish between interactive menus and direct actions
 
 ---
 
