@@ -3,13 +3,15 @@
 ## [Unreleased]
 
 ### Added
-- 🍺 Homebrew distribution support
+- 🍺 Homebrew distribution support with standard tap naming
 - 🛠️ `npm run release` - complete local release automation
 - 📚 Simplified documentation
 
 ### Changed
 - Switched to local-only releases (no GitHub Actions)
 - Formula updates automatically during release
+- Repository renamed to `homebrew-easy-git-cli` for Homebrew tap compatibility
+- Homebrew installation now uses standard tap format: `brew install wassupss/easy-git-cli/easy-git`
 
 ---
 

@@ -1,6 +1,6 @@
 class EasyGit < Formula
   desc "Interactive CLI tool to make Git easier to use with multi-language support"
-  homepage "https://github.com/wassupss/easy-git-cli"
+  homepage "https://github.com/wassupss/homebrew-easy-git-cli"
   url "https://registry.npmjs.org/@wassupsong/easy-git-cli/-/easy-git-cli-1.1.2.tgz"
   sha256 "01bb1d16fe96d86a993ad08226985c20487e1b318ea28cf7c92d527621f44a9f"
   license "MIT"

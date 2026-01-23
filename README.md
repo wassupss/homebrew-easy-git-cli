@@ -22,8 +22,10 @@ An interactive CLI tool to make Git easier to use in terminal.
 ### Via Homebrew (Recommended for macOS/Linux) 🍺
 
 ```bash
-brew install https://raw.githubusercontent.com/wassupss/easy-git-cli/main/Formula/easy-git.rb
+brew install wassupss/easy-git-cli/easy-git
 ```
+
+> **Note**: This requires the repository to be named `homebrew-easy-git-cli` on GitHub.
 
 ### Via npm
 
