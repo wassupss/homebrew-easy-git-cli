@@ -22,7 +22,7 @@ An interactive CLI tool to make Git easier to use in terminal.
 ### Via Homebrew (Recommended for macOS/Linux) 🍺
 
 ```bash
-brew install wassupss/easy-git-cli/easy-git
+brew install https://raw.githubusercontent.com/wassupss/easy-git-cli/main/Formula/easy-git.rb
 ```
 
 ### Via npm
@@ -37,7 +37,7 @@ npm install -g @wassupsong/easy-git-cli
 npx @wassupsong/easy-git-cli
 ```
 
-For more installation options, see [HOMEBREW.md](HOMEBREW.md)
+For more details, see [HOMEBREW.md](HOMEBREW.md)
 
 ## 🎯 Usage
 
