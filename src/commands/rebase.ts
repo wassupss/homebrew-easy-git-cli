@@ -95,7 +95,9 @@ async function performRebase(gitService: GitService): Promise<void> {
     console.log(chalk.white("  1. 충돌 파일을 해결하세요"));
     console.log(chalk.white("  2. git add <파일>로 해결된 파일을 추가하세요"));
     console.log(chalk.white("  3. 메뉴에서 'Rebase 계속 진행'을 선택하세요"));
-    console.log(chalk.gray("\n또는 'Rebase 취소'를 선택하여 취소할 수 있습니다.\n"));
+    console.log(
+      chalk.gray("\n또는 'Rebase 취소'를 선택하여 취소할 수 있습니다.\n")
+    );
   }
 }
 
@@ -118,9 +120,7 @@ async function continueRebase(gitService: GitService): Promise<void> {
     await gitService.rebaseContinue();
     console.log(chalk.green("✅ Rebase 계속 진행 완료!"));
   } catch (error: any) {
-    console.error(
-      chalk.red(`❌ Rebase 계속 진행 실패: ${error.message}`)
-    );
+    console.error(chalk.red(`❌ Rebase 계속 진행 실패: ${error.message}`));
   }
 }
 

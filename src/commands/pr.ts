@@ -62,7 +62,9 @@ export async function handlePR(gitService: GitService): Promise<void> {
 
     if (remotes.length === 0) {
       console.log(
-        chalk.red("❌ 원격 저장소가 설정되지 않았습니다. Remote를 추가해주세요.")
+        chalk.red(
+          "❌ 원격 저장소가 설정되지 않았습니다. Remote를 추가해주세요."
+        )
       );
       return;
     }
@@ -75,9 +77,7 @@ export async function handlePR(gitService: GitService): Promise<void> {
 
     if (remoteInfo.provider === "unknown") {
       console.log(
-        chalk.yellow(
-          `⚠️  지원하지 않는 Git 호스팅 서비스입니다: ${remoteUrl}`
-        )
+        chalk.yellow(`⚠️  지원하지 않는 Git 호스팅 서비스입니다: ${remoteUrl}`)
       );
       console.log(chalk.gray("지원 서비스: GitHub, GitLab, Bitbucket"));
       return;
@@ -124,14 +124,10 @@ export async function handlePR(gitService: GitService): Promise<void> {
 
 function parseRemoteUrl(url: string): RemoteInfo {
   // SSH 형식: git@github.com:owner/repo.git
-  const sshMatch = url.match(
-    /git@([^:]+):([^/]+)\/(.+?)(?:\.git)?$/
-  );
+  const sshMatch = url.match(/git@([^:]+):([^/]+)\/(.+?)(?:\.git)?$/);
 
   // HTTPS 형식: https://github.com/owner/repo.git
-  const httpsMatch = url.match(
-    /https?:\/\/([^/]+)\/([^/]+)\/(.+?)(?:\.git)?$/
-  );
+  const httpsMatch = url.match(/https?:\/\/([^/]+)\/([^/]+)\/(.+?)(?:\.git)?$/);
 
   let host: string;
   let owner: string;
@@ -234,9 +230,7 @@ export async function openPRHome(gitService: GitService): Promise<void> {
     const remotes = await gitService.getRemotes();
 
     if (remotes.length === 0) {
-      console.log(
-        chalk.red("❌ 원격 저장소가 설정되지 않았습니다.")
-      );
+      console.log(chalk.red("❌ 원격 저장소가 설정되지 않았습니다."));
       return;
     }
 
@@ -245,9 +239,7 @@ export async function openPRHome(gitService: GitService): Promise<void> {
     const remoteInfo = parseRemoteUrl(remoteUrl);
 
     if (remoteInfo.provider === "unknown") {
-      console.log(
-        chalk.yellow("⚠️  지원하지 않는 Git 호스팅 서비스입니다.")
-      );
+      console.log(chalk.yellow("⚠️  지원하지 않는 Git 호스팅 서비스입니다."));
       return;
     }
 
@@ -289,9 +281,7 @@ export async function viewPRList(gitService: GitService): Promise<void> {
     const remoteInfo = parseRemoteUrl(remoteUrl);
 
     if (remoteInfo.provider === "unknown") {
-      console.log(
-        chalk.yellow("⚠️  지원하지 않는 Git 호스팅 서비스입니다.")
-      );
+      console.log(chalk.yellow("⚠️  지원하지 않는 Git 호스팅 서비스입니다."));
       return;
     }
 

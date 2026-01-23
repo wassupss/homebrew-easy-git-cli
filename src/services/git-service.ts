@@ -327,4 +327,51 @@ export class GitService {
       throw error;
     }
   }
+
+  async revert(commitHash: string): Promise<void> {
+    const spinner = ora(`커밋 ${commitHash} 되돌리는 중...`).start();
+    try {
+      await this.git.revert(commitHash);
+      spinner.succeed(`커밋 ${commitHash} 되돌리기 완료`);
+    } catch (error: any) {
+      spinner.fail("커밋 되돌리기 실패");
+      throw error;
+    }
+  }
+
+  async resetSoft(commitHash?: string): Promise<void> {
+    const target = commitHash || "이전 커밋";
+    const spinner = ora(`커밋 취소 중 (Soft)...`).start();
+    try {
+      await this.git.resetSoft(commitHash);
+      spinner.succeed(`커밋 취소됨 (변경사항은 Staged 상태로 유지)`);
+    } catch (error: any) {
+      spinner.fail("커밋 취소 실패");
+      throw error;
+    }
+  }
+
+  async resetMixed(commitHash?: string): Promise<void> {
+    const target = commitHash || "이전 커밋";
+    const spinner = ora(`커밋 취소 중 (Mixed)...`).start();
+    try {
+      await this.git.resetMixed(commitHash);
+      spinner.succeed(`커밋 취소됨 (변경사항은 Unstaged 상태로 유지)`);
+    } catch (error: any) {
+      spinner.fail("커밋 취소 실패");
+      throw error;
+    }
+  }
+
+  async resetHard(commitHash?: string): Promise<void> {
+    const target = commitHash || "이전 커밋";
+    const spinner = ora(`커밋 취소 중 (Hard)...`).start();
+    try {
+      await this.git.resetHard(commitHash);
+      spinner.succeed(`커밋 취소됨 (변경사항 모두 삭제됨)`);
+    } catch (error: any) {
+      spinner.fail("커밋 취소 실패");
+      throw error;
+    }
+  }
 }

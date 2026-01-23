@@ -354,4 +354,23 @@ export class GitExecutor {
   async rebaseSkip(): Promise<void> {
     await this.execute("git rebase --skip");
   }
+
+  async revert(commitHash: string): Promise<void> {
+    await this.execute(`git revert ${commitHash} --no-edit`);
+  }
+
+  async resetSoft(commitHash?: string): Promise<void> {
+    const target = commitHash || "HEAD~1";
+    await this.execute(`git reset --soft ${target}`);
+  }
+
+  async resetMixed(commitHash?: string): Promise<void> {
+    const target = commitHash || "HEAD~1";
+    await this.execute(`git reset --mixed ${target}`);
+  }
+
+  async resetHard(commitHash?: string): Promise<void> {
+    const target = commitHash || "HEAD~1";
+    await this.execute(`git reset --hard ${target}`);
+  }
 }

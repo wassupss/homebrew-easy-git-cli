@@ -101,6 +101,24 @@ async function executeAction(
       }
       break;
 
+    case "revert":
+      if (action.params?.commitHash) {
+        await gitService.revert(action.params.commitHash);
+        console.log(chalk.green("✅ 커밋 되돌리기 완료"));
+      }
+      break;
+
+    case "reset":
+      if (action.params?.type === "soft") {
+        await gitService.resetSoft(action.params?.commitHash);
+      } else if (action.params?.type === "mixed") {
+        await gitService.resetMixed(action.params?.commitHash);
+      } else if (action.params?.type === "hard") {
+        await gitService.resetHard(action.params?.commitHash);
+      }
+      console.log(chalk.green("✅ 커밋 취소 완료"));
+      break;
+
     default:
       console.log(chalk.yellow(`⚠️  알 수 없는 액션: ${action.type}`));
   }
@@ -269,6 +287,8 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
           { name: "풀 (pull)", value: "pull" },
           { name: "브랜치 전환 (branch)", value: "branch" },
           { name: "Rebase", value: "rebase" },
+          { name: "커밋 되돌리기 (revert)", value: "revert" },
+          { name: "커밋 취소 (reset)", value: "reset" },
           { name: "Stash 저장 (stash save)", value: "stash-save" },
           { name: "Stash 복원 (stash pop)", value: "stash-pop" },
         ],
@@ -301,6 +321,31 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         },
       ]);
       actions.push({ type: "rebase", params: { branch: targetBranch } });
+    } else if (actionType === "revert") {
+      const { commitHash } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "commitHash",
+          message: "되돌릴 커밋 해시를 입력하세요 (예: abc1234):",
+          validate: (input) =>
+            input.trim() ? true : "커밋 해시를 입력해주세요.",
+        },
+      ]);
+      actions.push({ type: "revert", params: { commitHash } });
+    } else if (actionType === "reset") {
+      const { resetType } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "resetType",
+          message: "Reset 타입을 선택하세요:",
+          choices: [
+            { name: "Soft (변경사항 Staged로 유지)", value: "soft" },
+            { name: "Mixed (변경사항 Unstaged로 유지)", value: "mixed" },
+            { name: "Hard (변경사항 모두 삭제)", value: "hard" },
+          ],
+        },
+      ]);
+      actions.push({ type: "reset", params: { type: resetType } });
     } else {
       actions.push({ type: actionType });
     }
