@@ -1,23 +1,23 @@
-# 기여 가이드
+# Contributing Guide
 
-Easy Git에 기여해주셔서 감사합니다! 🎉
+Thank you for contributing to Easy Git CLI! 🎉
 
-## 개발 환경 설정
+## Development Setup
 
-1. 저장소 포크 및 클론
+1. Fork and clone the repository
 
 ```bash
-git clone https://github.com/your-username/easy-git.git
-cd easy-git
+git clone https://github.com/your-username/easy-git-cli.git
+cd easy-git-cli
 ```
 
-2. 의존성 설치
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-3. 개발 모드 실행
+3. Run in development mode
 
 ```bash
 npm run dev
@@ -25,63 +25,83 @@ npm run dev
 
 ## 개발 워크플로우
 
-### 1. 브랜치 생성
+## Development Workflow
+
+### 1. Create a branch
 
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-### 2. 코드 작성
+### 2. Write code
 
-- TypeScript로 작성
-- 기존 코드 스타일 준수
-- 한글 메시지 사용
+- Write in TypeScript
+- Follow existing code style
+- Use localeService for all user-facing messages
+- Support both English and Korean
 
-### 3. 테스트
+### 3. Test
 
 ```bash
-# 빌드 테스트
+# Build test
 npm run build
 
-# 실행 테스트
+# Run tests
+npm test
+
+# Run in development
 npm run dev
 ```
 
-### 4. 커밋
+### 4. Commit
 
-의미있는 커밋 메시지 작성:
+Write meaningful commit messages:
 
 ```
-feat: 새로운 기능 추가
-fix: 버그 수정
-docs: 문서 업데이트
-refactor: 코드 리팩토링
-style: 코드 포맷팅
+feat: add new feature
+fix: fix bug
+docs: update documentation
+refactor: refactor code
+style: code formatting
+chore: update dependencies
 ```
 
 ### 5. Pull Request
 
-- 명확한 PR 제목과 설명
-- 변경 사항 상세 설명
-- 스크린샷 첨부 (UI 변경시)
+- Clear PR title and description
+- Detailed explanation of changes
+- Screenshots (for UI changes)
 
-## 코드 구조
+## Code Structure
 
 ```
 src/
-├── index.ts              # 메인 진입점, 메뉴 로직
+├── index.ts              # Main entry point, menu logic
 ├── services/
-│   └── GitService.ts     # Git 명령어 래퍼, simple-git 사용
+│   ├── git-service.ts    # Git command wrapper
+│   ├── locale-service.ts # Multi-language support
+│   └── config-service.ts # Custom command management
+├── utils/
+│   └── git-executor.ts   # Low-level git operations
 └── commands/
-    ├── add.ts            # git add 관련
-    ├── commit.ts         # git commit 관련
-    ├── push.ts           # git push 관련
-    ├── pull.ts           # git pull 관련
-    ├── branch.ts         # 브랜치 관리
-    ├── log.ts            # 로그 보기
+    ├── add.ts            # git add (staging)
+    ├── commit.ts         # git commit, log, graph
+    ├── push.ts           # git push
+    ├── pull.ts           # git pull
+    ├── branch.ts         # branch management, merge
+    ├── rebase.ts         # git rebase
+    ├── stash.ts          # git stash
+    ├── remote.ts         # remote management
+    ├── pr.ts             # pull request creation
+    ├── custom.ts         # custom commands
+    ├── log.ts            # commit history
+    └── status.ts         # git status
+```
+
     ├── stash.ts          # stash 관리
     └── status.ts         # git status 관련
-```
+
+````
 
 ## 새로운 명령어 추가하기
 
@@ -101,7 +121,7 @@ import { GitService } from "../services/GitService";
 export async function handleExample(gitService: GitService): Promise<void> {
   // 구현...
 }
-```
+````
 
 ```typescript
 // src/services/GitService.ts

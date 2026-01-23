@@ -15,37 +15,46 @@ interface RemoteInfo {
 }
 
 export async function handlePR(gitService: GitService): Promise<void> {
+  while (true) {
+    try {
+      // PR 메뉴 표시
+      const { action } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "action",
+          message: localeService.t("pr.selectAction"),
+          choices: [
+            { name: localeService.t("pr.createNew"), value: "create" },
+            { name: localeService.t("pr.viewList"), value: "list" },
+            { name: localeService.t("pr.openHome"), value: "home" },
+            { name: localeService.t("common.back"), value: "back" },
+          ],
+        },
+      ]);
+
+      if (action === "back") {
+        return;
+      }
+
+      switch (action) {
+        case "list":
+          await viewPRList(gitService);
+          break;
+        case "home":
+          await openPRHome(gitService);
+          break;
+        case "create":
+          await createPR(gitService);
+          break;
+      }
+    } catch (error: any) {
+      console.error(chalk.red(`\n❌ PR 작업 실패: ${error.message}`));
+    }
+  }
+}
+
+async function createPR(gitService: GitService): Promise<void> {
   try {
-    // PR 메뉴 표시
-    const { action } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "action",
-        message: localeService.t("pr.selectAction"),
-        choices: [
-          { name: localeService.t("pr.createNew"), value: "create" },
-          { name: localeService.t("pr.viewList"), value: "list" },
-          { name: localeService.t("pr.openHome"), value: "home" },
-          { name: localeService.t("common.back"), value: "back" },
-        ],
-      },
-    ]);
-
-    if (action === "back") {
-      return;
-    }
-
-    if (action === "list") {
-      await viewPRList(gitService);
-      return;
-    }
-
-    if (action === "home") {
-      await openPRHome(gitService);
-      return;
-    }
-
-    // action === "create"
     // 현재 브랜치 확인
     const currentBranch = await gitService.getCurrentBranch();
 

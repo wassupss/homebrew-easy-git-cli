@@ -4,40 +4,44 @@ import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
 
 export async function handleBranch(gitService: GitService): Promise<void> {
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("branch.selectAction"),
-      choices: [
-        { name: localeService.t("branch.list"), value: "list" },
-        { name: localeService.t("branch.create"), value: "create" },
-        { name: localeService.t("branch.switch"), value: "switch" },
-        { name: localeService.t("branch.merge"), value: "merge" },
-        { name: localeService.t("branch.delete"), value: "delete" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("branch.selectAction"),
+        choices: [
+          { name: localeService.t("branch.list"), value: "list" },
+          { name: localeService.t("branch.create"), value: "create" },
+          { name: localeService.t("branch.switch"), value: "switch" },
+          { name: localeService.t("branch.merge"), value: "merge" },
+          { name: localeService.t("branch.delete"), value: "delete" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  switch (action) {
-    case "list":
-      await showBranchList(gitService);
-      break;
-    case "create":
-      await createNewBranch(gitService);
-      break;
-    case "switch":
-      await switchBranch(gitService);
-      break;
-    case "merge":
-      await mergeBranch(gitService);
-      break;
-    case "delete":
-      await deleteBranch(gitService);
-      break;
-    case "back":
+    if (action === "back") {
       return;
+    }
+
+    switch (action) {
+      case "list":
+        await showBranchList(gitService);
+        break;
+      case "create":
+        await createNewBranch(gitService);
+        break;
+      case "switch":
+        await switchBranch(gitService);
+        break;
+      case "merge":
+        await mergeBranch(gitService);
+        break;
+      case "delete":
+        await deleteBranch(gitService);
+        break;
+    }
   }
 }
 

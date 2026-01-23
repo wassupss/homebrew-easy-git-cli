@@ -4,27 +4,29 @@ import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
 
 export async function handleAdd(gitService: GitService): Promise<void> {
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("staging.selectAction"),
-      choices: [
-        { name: localeService.t("staging.stage"), value: "stage" },
-        { name: localeService.t("staging.unstage"), value: "unstage" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("staging.selectAction"),
+        choices: [
+          { name: localeService.t("staging.stage"), value: "stage" },
+          { name: localeService.t("staging.unstage"), value: "unstage" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  if (action === "back") {
-    return;
-  }
+    if (action === "back") {
+      return;
+    }
 
-  if (action === "stage") {
-    await handleStage(gitService);
-  } else if (action === "unstage") {
-    await handleUnstage(gitService);
+    if (action === "stage") {
+      await handleStage(gitService);
+    } else if (action === "unstage") {
+      await handleUnstage(gitService);
+    }
   }
 }
 

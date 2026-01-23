@@ -4,42 +4,44 @@ import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
 
 export async function handleRebase(gitService: GitService): Promise<void> {
-  try {
-    const { action } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "action",
-        message: localeService.t("rebase.selectAction"),
-        choices: [
-          { name: localeService.t("rebase.branch"), value: "rebase" },
-          { name: localeService.t("rebase.continue"), value: "continue" },
-          { name: localeService.t("rebase.skip"), value: "skip" },
-          { name: localeService.t("rebase.abort"), value: "abort" },
-          { name: localeService.t("common.back"), value: "back" },
-        ],
-      },
-    ]);
+  while (true) {
+    try {
+      const { action } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "action",
+          message: localeService.t("rebase.selectAction"),
+          choices: [
+            { name: localeService.t("rebase.branch"), value: "rebase" },
+            { name: localeService.t("rebase.continue"), value: "continue" },
+            { name: localeService.t("rebase.skip"), value: "skip" },
+            { name: localeService.t("rebase.abort"), value: "abort" },
+            { name: localeService.t("common.back"), value: "back" },
+          ],
+        },
+      ]);
 
-    if (action === "back") {
-      return;
-    }
+      if (action === "back") {
+        return;
+      }
 
-    switch (action) {
-      case "rebase":
-        await performRebase(gitService);
-        break;
-      case "continue":
-        await continueRebase(gitService);
-        break;
-      case "skip":
-        await skipRebase(gitService);
-        break;
-      case "abort":
-        await abortRebase(gitService);
-        break;
+      switch (action) {
+        case "rebase":
+          await performRebase(gitService);
+          break;
+        case "continue":
+          await continueRebase(gitService);
+          break;
+        case "skip":
+          await skipRebase(gitService);
+          break;
+        case "abort":
+          await abortRebase(gitService);
+          break;
+      }
+    } catch (error: any) {
+      console.error(chalk.red(`❌ Rebase 작업 실패: ${error.message}`));
     }
-  } catch (error: any) {
-    console.error(chalk.red(`❌ Rebase 작업 실패: ${error.message}`));
   }
 }
 

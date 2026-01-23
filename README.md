@@ -19,9 +19,25 @@ An interactive CLI tool to make Git easier to use in terminal.
 
 ## 📦 Installation
 
+### Via Homebrew (Recommended for macOS/Linux) 🍺
+
+```bash
+brew install wassupss/easy-git-cli/easy-git
+```
+
+### Via npm
+
 ```bash
 npm install -g @wassupsong/easy-git-cli
 ```
+
+### Via npx (No installation required)
+
+```bash
+npx @wassupsong/easy-git-cli
+```
+
+For more installation options, see [HOMEBREW.md](HOMEBREW.md)
 
 ## 🎯 Usage
 
@@ -117,7 +133,51 @@ eg
 - **inquirer**: 인터랙티브 프롬프트
 - **chalk**: 터미널 색상
 - **ora**: 로딩 스피너
+
+## 🛠️ 기술 스택
+
+- **TypeScript**: 타입 안전성
+- **simple-git**: Git 명령어 실행
+- **inquirer**: 인터랙티브 프롬프트
+- **chalk**: 터미널 색상
+- **ora**: 로딩 스피너
 - **boxen**: 박스 UI
+
+## 🤝 Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+## 🚀 For Maintainers
+
+### First Time Setup (5 minutes)
+
+1. **Add NPM_TOKEN to GitHub Secrets**
+
+   - Create token at: https://www.npmjs.com/settings/wassupsong/tokens
+   - Add to: https://github.com/wassupss/easy-git-cli/settings/secrets/actions
+   - Name: `NPM_TOKEN`
+
+2. **Enable GitHub Actions write permissions**
+
+   - Go to: https://github.com/wassupss/easy-git-cli/settings/actions
+   - Select "Read and write permissions"
+
+3. **Done!** Now you can release with one command.
+
+### Release New Version
+
+```bash
+npm run release
+# Answer prompts, everything else is automated!
+```
+
+GitHub Actions will automatically:
+
+- ✅ Publish to npm
+- ✅ Create GitHub Release
+- ✅ Update Homebrew Formula
+
+See [GITHUB_SETUP.md](GITHUB_SETUP.md) and [RELEASE.md](RELEASE.md) for details.
 
 ## 💡 사용 팁
 

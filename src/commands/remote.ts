@@ -4,36 +4,40 @@ import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
 
 export async function handleRemote(gitService: GitService): Promise<void> {
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("remote.selectAction"),
-      choices: [
-        { name: localeService.t("remote.list"), value: "list" },
-        { name: localeService.t("remote.add"), value: "add" },
-        { name: localeService.t("remote.remove"), value: "remove" },
-        { name: localeService.t("remote.fetchAction"), value: "fetch" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("remote.selectAction"),
+        choices: [
+          { name: localeService.t("remote.list"), value: "list" },
+          { name: localeService.t("remote.add"), value: "add" },
+          { name: localeService.t("remote.remove"), value: "remove" },
+          { name: localeService.t("remote.fetchAction"), value: "fetch" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  switch (action) {
-    case "list":
-      await showRemoteList(gitService);
-      break;
-    case "add":
-      await addRemote(gitService);
-      break;
-    case "remove":
-      await removeRemote(gitService);
-      break;
-    case "fetch":
-      await fetchRemote(gitService);
-      break;
-    case "back":
+    if (action === "back") {
       return;
+    }
+
+    switch (action) {
+      case "list":
+        await showRemoteList(gitService);
+        break;
+      case "add":
+        await addRemote(gitService);
+        break;
+      case "remove":
+        await removeRemote(gitService);
+        break;
+      case "fetch":
+        await fetchRemote(gitService);
+        break;
+    }
   }
 }
 

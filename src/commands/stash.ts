@@ -4,40 +4,44 @@ import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
 
 export async function handleStash(gitService: GitService): Promise<void> {
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("stash.selectAction"),
-      choices: [
-        { name: localeService.t("stash.save"), value: "save" },
-        { name: localeService.t("stash.list"), value: "list" },
-        { name: localeService.t("stash.pop"), value: "pop" },
-        { name: localeService.t("stash.drop"), value: "drop" },
-        { name: localeService.t("stash.clear"), value: "clear" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("stash.selectAction"),
+        choices: [
+          { name: localeService.t("stash.save"), value: "save" },
+          { name: localeService.t("stash.list"), value: "list" },
+          { name: localeService.t("stash.pop"), value: "pop" },
+          { name: localeService.t("stash.drop"), value: "drop" },
+          { name: localeService.t("stash.clear"), value: "clear" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  switch (action) {
-    case "save":
-      await stashSave(gitService);
-      break;
-    case "list":
-      await stashList(gitService);
-      break;
-    case "pop":
-      await stashPop(gitService);
-      break;
-    case "drop":
-      await stashDrop(gitService);
-      break;
-    case "clear":
-      await stashClear(gitService);
-      break;
-    case "back":
+    if (action === "back") {
       return;
+    }
+
+    switch (action) {
+      case "save":
+        await stashSave(gitService);
+        break;
+      case "list":
+        await stashList(gitService);
+        break;
+      case "pop":
+        await stashPop(gitService);
+        break;
+      case "drop":
+        await stashDrop(gitService);
+        break;
+      case "clear":
+        await stashClear(gitService);
+        break;
+    }
   }
 }
 

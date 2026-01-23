@@ -5,42 +5,44 @@ import { localeService } from "../services/locale-service";
 import { handleLog } from "./log";
 
 export async function handleCommit(gitService: GitService): Promise<void> {
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("commit.selectAction"),
-      choices: [
-        { name: localeService.t("commit.createNew"), value: "commit" },
-        { name: localeService.t("commit.viewLog"), value: "log" },
-        { name: localeService.t("commit.viewGraph"), value: "graph" },
-        { name: localeService.t("commit.revert"), value: "revert" },
-        { name: localeService.t("commit.reset"), value: "reset" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("commit.selectAction"),
+        choices: [
+          { name: localeService.t("commit.createNew"), value: "commit" },
+          { name: localeService.t("commit.viewLog"), value: "log" },
+          { name: localeService.t("commit.viewGraph"), value: "graph" },
+          { name: localeService.t("commit.revert"), value: "revert" },
+          { name: localeService.t("commit.reset"), value: "reset" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  if (action === "back") {
-    return;
-  }
+    if (action === "back") {
+      return;
+    }
 
-  switch (action) {
-    case "commit":
-      await createCommit(gitService);
-      break;
-    case "log":
-      await handleLog(gitService);
-      break;
-    case "graph":
-      await viewGraph(gitService);
-      break;
-    case "revert":
-      await revertCommit(gitService);
-      break;
-    case "reset":
-      await resetCommit(gitService);
-      break;
+    switch (action) {
+      case "commit":
+        await createCommit(gitService);
+        break;
+      case "log":
+        await handleLog(gitService);
+        break;
+      case "graph":
+        await viewGraph(gitService);
+        break;
+      case "revert":
+        await revertCommit(gitService);
+        break;
+      case "reset":
+        await resetCommit(gitService);
+        break;
+    }
   }
 }
 

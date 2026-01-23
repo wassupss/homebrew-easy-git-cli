@@ -180,46 +180,50 @@ export async function handleCustomCommands(
   gitService: GitService,
   configService: ConfigService
 ): Promise<void> {
-  const config = configService.getConfig();
+  while (true) {
+    const config = configService.getConfig();
 
-  const { action } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "action",
-      message: localeService.t("custom.selectAction"),
-      choices: [
-        { name: localeService.t("custom.execute"), value: "execute" },
-        { name: localeService.t("custom.list"), value: "list" },
-        { name: localeService.t("custom.add"), value: "add" },
-        { name: localeService.t("custom.remove"), value: "remove" },
-        { name: localeService.t("custom.settings"), value: "settings" },
-        { name: localeService.t("custom.reset"), value: "reset" },
-        { name: localeService.t("common.back"), value: "back" },
-      ],
-    },
-  ]);
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: localeService.t("custom.selectAction"),
+        choices: [
+          { name: localeService.t("custom.execute"), value: "execute" },
+          { name: localeService.t("custom.list"), value: "list" },
+          { name: localeService.t("custom.add"), value: "add" },
+          { name: localeService.t("custom.remove"), value: "remove" },
+          { name: localeService.t("custom.settings"), value: "settings" },
+          { name: localeService.t("custom.reset"), value: "reset" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+      },
+    ]);
 
-  switch (action) {
-    case "execute":
-      await executeCustomCommandInteractive(gitService, configService);
-      break;
-    case "list":
-      showCustomCommandsList(configService);
-      break;
-    case "add":
-      await addCustomCommand(configService);
-      break;
-    case "remove":
-      await removeCustomCommand(configService);
-      break;
-    case "settings":
-      showSettings(configService);
-      break;
-    case "reset":
-      await resetSettings(configService);
-      break;
-    case "back":
+    if (action === "back") {
       return;
+    }
+
+    switch (action) {
+      case "execute":
+        await executeCustomCommandInteractive(gitService, configService);
+        break;
+      case "list":
+        showCustomCommandsList(configService);
+        break;
+      case "add":
+        await addCustomCommand(configService);
+        break;
+      case "remove":
+        await removeCustomCommand(configService);
+        break;
+      case "settings":
+        showSettings(configService);
+        break;
+      case "reset":
+        await resetSettings(configService);
+        break;
+    }
   }
 }
 

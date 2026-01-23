@@ -16,7 +16,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "prepublishOnly": "npm run build && npm test",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "update-formula": "bash scripts/update-formula.sh",
+    "release": "bash scripts/release.sh"
   },
   "keywords": [
     "git",
