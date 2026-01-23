@@ -9,6 +9,9 @@ import { handlePush } from "./push";
 import { handlePull } from "./pull";
 import { handleStash } from "./stash";
 import { handleRebase } from "./rebase";
+import { handleRollback } from "./rollback";
+import { handleBranch } from "./branch";
+import { handlePR } from "./pr";
 import { localeService } from "../services/locale-service";
 
 export async function executeCustomCommand(
@@ -136,6 +139,84 @@ async function executeAction(
         await gitService.resetHard(action.params?.commitHash);
       }
       console.log(chalk.green(`✅ ${localeService.t("custom.resetComplete")}`));
+      break;
+
+    case "discard":
+      if (action.params?.files && action.params.files.length > 0) {
+        await gitService.discardChanges(action.params.files);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.discardComplete")}`)
+        );
+      }
+      break;
+
+    case "rollback":
+      await handleRollback(gitService);
+      break;
+
+    case "branch-management":
+      await handleBranch(gitService);
+      break;
+
+    case "pr":
+      await handlePR(gitService);
+      break;
+
+    case "merge":
+      if (action.params?.branch) {
+        await gitService.merge(
+          action.params.branch,
+          action.params?.noFf || false
+        );
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.mergeComplete")}`)
+        );
+      }
+      break;
+
+    case "fetch":
+      await gitService.fetchAll();
+      console.log(chalk.green(`✅ ${localeService.t("custom.fetchComplete")}`));
+      break;
+
+    case "create-branch":
+      if (action.params?.name) {
+        await gitService.createBranch(action.params.name);
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchCreated")}: ${
+              action.params.name
+            }`
+          )
+        );
+      }
+      break;
+
+    case "delete-branch":
+      if (action.params?.name) {
+        await gitService.deleteBranch(
+          action.params.name,
+          action.params?.force || false
+        );
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchDeleted")}: ${
+              action.params.name
+            }`
+          )
+        );
+      }
+      break;
+
+    case "tag":
+      if (action.params?.name) {
+        await gitService.createTag(action.params.name, action.params?.message);
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.tagCreated")}: ${action.params.name}`
+          )
+        );
+      }
       break;
 
     default:
@@ -335,6 +416,42 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
             name: localeService.t("custom.actionStashPop"),
             value: "stash-pop",
           },
+          {
+            name: localeService.t("custom.actionDiscard"),
+            value: "discard",
+          },
+          {
+            name: localeService.t("custom.actionMerge"),
+            value: "merge",
+          },
+          {
+            name: localeService.t("custom.actionFetch"),
+            value: "fetch",
+          },
+          {
+            name: localeService.t("custom.actionCreateBranch"),
+            value: "create-branch",
+          },
+          {
+            name: localeService.t("custom.actionDeleteBranch"),
+            value: "delete-branch",
+          },
+          {
+            name: localeService.t("custom.actionTag"),
+            value: "tag",
+          },
+          {
+            name: localeService.t("custom.actionPR"),
+            value: "pr",
+          },
+          {
+            name: localeService.t("custom.actionRollback"),
+            value: "rollback",
+          },
+          {
+            name: localeService.t("custom.actionBranchManagement"),
+            value: "branch-management",
+          },
         ],
       },
     ]);
@@ -390,6 +507,104 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         },
       ]);
       actions.push({ type: "reset", params: { type: resetType } });
+    } else if (actionType === "discard") {
+      const { discardType } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "discardType",
+          message: localeService.t("custom.selectDiscardType"),
+          choices: [
+            { name: localeService.t("custom.discardAll"), value: "all" },
+            {
+              name: localeService.t("custom.discardTracked"),
+              value: "tracked",
+            },
+          ],
+        },
+      ]);
+      actions.push({
+        type: "discard",
+        params: { type: discardType, files: [] },
+      });
+    } else if (actionType === "merge") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: localeService.t("custom.enterMergeBranch"),
+          validate: (input) =>
+            input.trim() ? true : localeService.t("custom.branchRequired"),
+        },
+      ]);
+      const { noFf } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "noFf",
+          message: localeService.t("custom.useNoFf"),
+          default: false,
+        },
+      ]);
+      actions.push({ type: "merge", params: { branch: branchName, noFf } });
+    } else if (actionType === "fetch") {
+      actions.push({ type: "fetch" });
+    } else if (actionType === "create-branch") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: localeService.t("custom.enterNewBranchName"),
+          validate: (input) =>
+            input.trim() ? true : localeService.t("custom.branchRequired"),
+        },
+      ]);
+      actions.push({ type: "create-branch", params: { name: branchName } });
+    } else if (actionType === "delete-branch") {
+      const { branchName } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "branchName",
+          message: localeService.t("custom.enterDeleteBranchName"),
+          validate: (input) =>
+            input.trim() ? true : localeService.t("custom.branchRequired"),
+        },
+      ]);
+      const { force } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "force",
+          message: localeService.t("custom.forceDelete"),
+          default: false,
+        },
+      ]);
+      actions.push({
+        type: "delete-branch",
+        params: { name: branchName, force },
+      });
+    } else if (actionType === "tag") {
+      const { tagName, tagMessage } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "tagName",
+          message: localeService.t("custom.enterTagName"),
+          validate: (input) =>
+            input.trim() ? true : localeService.t("custom.tagRequired"),
+        },
+        {
+          type: "input",
+          name: "tagMessage",
+          message: localeService.t("custom.enterTagMessage"),
+        },
+      ]);
+      actions.push({
+        type: "tag",
+        params: { name: tagName, message: tagMessage || undefined },
+      });
+    } else if (actionType === "pr") {
+      actions.push({ type: "pr" });
+    } else if (actionType === "rollback") {
+      actions.push({ type: "rollback" });
+    } else if (actionType === "branch-management") {
+      actions.push({ type: "branch-management" });
     } else {
       actions.push({ type: actionType });
     }

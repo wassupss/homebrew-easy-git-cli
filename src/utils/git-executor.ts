@@ -397,4 +397,44 @@ export class GitExecutor {
       `git log --graph --oneline --decorate --all -${maxCount} --pretty=format:"${format}"`
     );
   }
+
+  async discardChanges(files: string[]): Promise<void> {
+    // 각 파일을 개별적으로 처리
+    for (const file of files) {
+      try {
+        // Staged 파일인지 확인하고 unstage
+        const statusResult = await this.execute(
+          `git status --porcelain "${file}"`
+        );
+
+        if (statusResult) {
+          const statusCode = statusResult.substring(0, 2);
+
+          // Staged 파일이면 먼저 unstage
+          if (statusCode[0] !== " " && statusCode[0] !== "?") {
+            await this.execute(`git restore --staged "${file}"`);
+          }
+
+          // Untracked 파일은 삭제
+          if (statusCode === "??") {
+            await this.execute(`rm -f "${file}"`);
+          } else {
+            // Modified/Deleted 파일은 restore
+            await this.execute(`git restore "${file}"`);
+          }
+        }
+      } catch (error) {
+        // 개별 파일 처리 실패는 무시하고 계속 진행
+        console.warn(`Warning: Could not discard changes for ${file}`);
+      }
+    }
+  }
+
+  async createTag(tagName: string, message?: string): Promise<void> {
+    if (message) {
+      await this.execute(`git tag -a "${tagName}" -m "${message}"`);
+    } else {
+      await this.execute(`git tag "${tagName}"`);
+    }
+  }
 }

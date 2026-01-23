@@ -486,4 +486,26 @@ export class GitService {
       throw error;
     }
   }
+
+  async discardChanges(files: string[]): Promise<void> {
+    const spinner = ora(`${files.length}개 파일의 변경사항 취소 중...`).start();
+    try {
+      await this.git.discardChanges(files);
+      spinner.succeed(`${files.length}개 파일의 변경사항이 취소되었습니다`);
+    } catch (error: any) {
+      spinner.fail("변경사항 취소 실패");
+      throw error;
+    }
+  }
+
+  async createTag(tagName: string, message?: string): Promise<void> {
+    const spinner = ora(`태그 '${tagName}' 생성 중...`).start();
+    try {
+      await this.git.createTag(tagName, message);
+      spinner.succeed(`태그 '${tagName}' 생성됨`);
+    } catch (error: any) {
+      spinner.fail("태그 생성 실패");
+      throw error;
+    }
+  }
 }
