@@ -1,18 +1,19 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function handleCommit(gitService: GitService): Promise<void> {
   const { action } = await inquirer.prompt([
     {
       type: "list",
       name: "action",
-      message: "커밋 작업을 선택하세요:",
+      message: localeService.t("commit.selectAction"),
       choices: [
-        { name: "💾 새 커밋 생성", value: "commit" },
-        { name: "⏪ 커밋 되돌리기 (Revert)", value: "revert" },
-        { name: "↩️  커밋 취소 (Reset)", value: "reset" },
-        { name: "🔙 돌아가기", value: "back" },
+        { name: localeService.t("commit.createNew"), value: "commit" },
+        { name: localeService.t("commit.revert"), value: "revert" },
+        { name: localeService.t("commit.reset"), value: "reset" },
+        { name: localeService.t("common.back"), value: "back" },
       ],
     },
   ]);

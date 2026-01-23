@@ -9,6 +9,7 @@ import { handlePush } from "./push";
 import { handlePull } from "./pull";
 import { handleStash } from "./stash";
 import { handleRebase } from "./rebase";
+import { localeService } from "../services/locale-service";
 
 export async function executeCustomCommand(
   commandName: string,
@@ -19,21 +20,33 @@ export async function executeCustomCommand(
 
   if (!command) {
     console.log(
-      chalk.red(`❌ 커스텀 커맨드 '${commandName}'을 찾을 수 없습니다.`)
+      chalk.red(
+        `❌ ${localeService.t("custom.commandNotFound")} '${commandName}'`
+      )
     );
     return;
   }
 
-  console.log(chalk.cyan(`\n🚀 커스텀 커맨드 실행: ${command.name}`));
+  console.log(
+    chalk.cyan(`\n🚀 ${localeService.t("custom.executing")} ${command.name}`)
+  );
   console.log(chalk.gray(`   ${command.description}\n`));
 
   try {
     for (const action of command.actions) {
       await executeAction(action, gitService, configService);
     }
-    console.log(chalk.green(`\n✅ '${command.name}' 커맨드 완료!`));
+    console.log(
+      chalk.green(
+        `\n✅ '${command.name}'${localeService.t("custom.completed")}`
+      )
+    );
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ 커맨드 실행 중 오류: ${error.message}`));
+    console.error(
+      chalk.red(
+        `\n❌ ${localeService.t("custom.executionError")} ${error.message}`
+      )
+    );
   }
 }
 
@@ -50,7 +63,9 @@ async function executeAction(
     case "add":
       if (action.params?.all) {
         await gitService.addAll();
-        console.log(chalk.green("✅ 모든 파일이 추가되었습니다."));
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.allFilesAdded")}`)
+        );
       } else {
         await handleAdd(gitService);
       }
@@ -83,10 +98,10 @@ async function executeAction(
     case "stash":
       if (action.params?.action === "save") {
         await gitService.stashSave(action.params?.message);
-        console.log(chalk.green("✅ Stash 저장됨"));
+        console.log(chalk.green(`✅ ${localeService.t("custom.stashSaved")}`));
       } else if (action.params?.action === "pop") {
         await gitService.stashPop();
-        console.log(chalk.green("✅ Stash 복원됨"));
+        console.log(chalk.green(`✅ ${localeService.t("custom.stashPopped")}`));
       } else {
         await handleStash(gitService);
       }
@@ -95,7 +110,9 @@ async function executeAction(
     case "rebase":
       if (action.params?.branch) {
         await gitService.rebase(action.params.branch);
-        console.log(chalk.green("✅ Rebase 완료"));
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.rebaseComplete")}`)
+        );
       } else {
         await handleRebase(gitService);
       }
@@ -104,7 +121,9 @@ async function executeAction(
     case "revert":
       if (action.params?.commitHash) {
         await gitService.revert(action.params.commitHash);
-        console.log(chalk.green("✅ 커밋 되돌리기 완료"));
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.revertComplete")}`)
+        );
       }
       break;
 
@@ -116,11 +135,15 @@ async function executeAction(
       } else if (action.params?.type === "hard") {
         await gitService.resetHard(action.params?.commitHash);
       }
-      console.log(chalk.green("✅ 커밋 취소 완료"));
+      console.log(chalk.green(`✅ ${localeService.t("custom.resetComplete")}`));
       break;
 
     default:
-      console.log(chalk.yellow(`⚠️  알 수 없는 액션: ${action.type}`));
+      console.log(
+        chalk.yellow(
+          `⚠️  ${localeService.t("custom.unknownAction")} ${action.type}`
+        )
+      );
   }
 }
 
@@ -131,7 +154,7 @@ async function promptAndSwitchBranch(gitService: GitService): Promise<void> {
   );
 
   if (branchList.length === 0) {
-    console.log(chalk.yellow("전환할 수 있는 다른 브랜치가 없습니다."));
+    console.log(chalk.yellow(localeService.t("custom.noOtherBranches")));
     return;
   }
 
@@ -139,7 +162,7 @@ async function promptAndSwitchBranch(gitService: GitService): Promise<void> {
     {
       type: "list",
       name: "selectedBranch",
-      message: "전환할 브랜치를 선택하세요:",
+      message: localeService.t("custom.selectBranch"),
       choices: branchList,
     },
   ]);
@@ -163,15 +186,15 @@ export async function handleCustomCommands(
     {
       type: "list",
       name: "action",
-      message: "커스텀 커맨드 관리:",
+      message: localeService.t("custom.selectAction"),
       choices: [
-        { name: "▶️  커스텀 커맨드 실행", value: "execute" },
-        { name: "📋 커스텀 커맨드 목록", value: "list" },
-        { name: "➕ 새 커맨드 추가", value: "add" },
-        { name: "🗑️  커맨드 삭제", value: "remove" },
-        { name: "⚙️  설정 보기", value: "settings" },
-        { name: "🔄 기본값으로 초기화", value: "reset" },
-        { name: "← 돌아가기", value: "back" },
+        { name: localeService.t("custom.execute"), value: "execute" },
+        { name: localeService.t("custom.list"), value: "list" },
+        { name: localeService.t("custom.add"), value: "add" },
+        { name: localeService.t("custom.remove"), value: "remove" },
+        { name: localeService.t("custom.settings"), value: "settings" },
+        { name: localeService.t("custom.reset"), value: "reset" },
+        { name: localeService.t("common.back"), value: "back" },
       ],
     },
   ]);
@@ -207,7 +230,7 @@ async function executeCustomCommandInteractive(
   const config = configService.getConfig();
 
   if (config.customCommands.length === 0) {
-    console.log(chalk.yellow("등록된 커스텀 커맨드가 없습니다."));
+    console.log(chalk.yellow(localeService.t("custom.noCommands")));
     return;
   }
 
@@ -215,7 +238,7 @@ async function executeCustomCommandInteractive(
     {
       type: "list",
       name: "selectedCommand",
-      message: "실행할 커맨드를 선택하세요:",
+      message: localeService.t("custom.selectToExecute"),
       choices: config.customCommands.map((cmd) => ({
         name: `${cmd.name} - ${cmd.description}`,
         value: cmd.name,
@@ -229,44 +252,53 @@ async function executeCustomCommandInteractive(
 function showCustomCommandsList(configService: ConfigService): void {
   const config = configService.getConfig();
 
-  console.log(chalk.cyan.bold("\n📋 등록된 커스텀 커맨드:\n"));
+  console.log(chalk.cyan.bold(`\n${localeService.t("custom.listTitle")}\n`));
 
   if (config.customCommands.length === 0) {
-    console.log(chalk.yellow("등록된 커스텀 커맨드가 없습니다."));
+    console.log(chalk.yellow(localeService.t("custom.noCommands")));
     return;
   }
 
   config.customCommands.forEach((cmd, index) => {
     console.log(chalk.green(`${index + 1}. ${cmd.name}`));
-    console.log(chalk.gray(`   설명: ${cmd.description}`));
     console.log(
-      chalk.gray(`   액션: ${cmd.actions.map((a) => a.type).join(" → ")}`)
+      chalk.gray(
+        `   ${localeService.t("custom.description")} ${cmd.description}`
+      )
+    );
+    console.log(
+      chalk.gray(
+        `   ${localeService.t("custom.actions")} ${cmd.actions
+          .map((a) => a.type)
+          .join(" → ")}`
+      )
     );
     console.log();
   });
 }
 
 async function addCustomCommand(configService: ConfigService): Promise<void> {
-  console.log(chalk.cyan("\n➕ 새 커스텀 커맨드 추가\n"));
-  console.log(chalk.gray('예: "eg <커맨드이름>" 형태로 사용됩니다.\n'));
+  console.log(chalk.cyan(`\n${localeService.t("custom.addTitle")}\n`));
+  console.log(chalk.gray(`${localeService.t("custom.addUsage")}\n`));
 
   const { name, description } = await inquirer.prompt([
     {
       type: "input",
       name: "name",
-      message: "커맨드 이름:",
+      message: localeService.t("custom.enterName"),
       validate: (input) => {
-        if (!input.trim()) return "이름은 비워둘 수 없습니다.";
+        if (!input.trim()) return localeService.t("custom.nameRequired");
         if (!/^[a-z0-9-]+$/.test(input))
-          return "소문자, 숫자, - 만 사용 가능합니다.";
+          return localeService.t("custom.nameInvalid");
         return true;
       },
     },
     {
       type: "input",
       name: "description",
-      message: "설명:",
-      validate: (input) => (input.trim() ? true : "설명은 비워둘 수 없습니다."),
+      message: localeService.t("custom.enterDescription"),
+      validate: (input) =>
+        input.trim() ? true : localeService.t("custom.descriptionRequired"),
     },
   ]);
 
@@ -278,19 +310,27 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
       {
         type: "list",
         name: "actionType",
-        message: `액션 ${actions.length + 1} - 어떤 작업을 추가하시겠습니까?`,
+        message: `${localeService.t("custom.selectActionType")} ${
+          actions.length + 1
+        }`,
         choices: [
-          { name: "상태 확인 (status)", value: "status" },
-          { name: "파일 추가 (add)", value: "add" },
-          { name: "커밋 (commit)", value: "commit" },
-          { name: "푸시 (push)", value: "push" },
-          { name: "풀 (pull)", value: "pull" },
-          { name: "브랜치 전환 (branch)", value: "branch" },
-          { name: "Rebase", value: "rebase" },
-          { name: "커밋 되돌리기 (revert)", value: "revert" },
-          { name: "커밋 취소 (reset)", value: "reset" },
-          { name: "Stash 저장 (stash save)", value: "stash-save" },
-          { name: "Stash 복원 (stash pop)", value: "stash-pop" },
+          { name: localeService.t("custom.actionStatus"), value: "status" },
+          { name: localeService.t("custom.actionAdd"), value: "add" },
+          { name: localeService.t("custom.actionCommit"), value: "commit" },
+          { name: localeService.t("custom.actionPush"), value: "push" },
+          { name: localeService.t("custom.actionPull"), value: "pull" },
+          { name: localeService.t("custom.actionBranch"), value: "branch" },
+          { name: localeService.t("custom.actionRebase"), value: "rebase" },
+          { name: localeService.t("custom.actionRevert"), value: "revert" },
+          { name: localeService.t("custom.actionReset"), value: "reset" },
+          {
+            name: localeService.t("custom.actionStashSave"),
+            value: "stash-save",
+          },
+          {
+            name: localeService.t("custom.actionStashPop"),
+            value: "stash-pop",
+          },
         ],
       },
     ]);
@@ -300,7 +340,7 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         {
           type: "confirm",
           name: "addAll",
-          message: "모든 파일을 추가하시겠습니까?",
+          message: localeService.t("custom.addAllFiles"),
           default: true,
         },
       ]);
@@ -316,7 +356,7 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         {
           type: "input",
           name: "targetBranch",
-          message: "Rebase할 대상 브랜치를 입력하세요 (예: main):",
+          message: localeService.t("custom.enterTargetBranch"),
           default: "main",
         },
       ]);
@@ -326,9 +366,9 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         {
           type: "input",
           name: "commitHash",
-          message: "되돌릴 커밋 해시를 입력하세요 (예: abc1234):",
+          message: localeService.t("custom.enterCommitHash"),
           validate: (input) =>
-            input.trim() ? true : "커밋 해시를 입력해주세요.",
+            input.trim() ? true : localeService.t("custom.commitHashRequired"),
         },
       ]);
       actions.push({ type: "revert", params: { commitHash } });
@@ -337,11 +377,11 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
         {
           type: "list",
           name: "resetType",
-          message: "Reset 타입을 선택하세요:",
+          message: localeService.t("custom.selectResetType"),
           choices: [
-            { name: "Soft (변경사항 Staged로 유지)", value: "soft" },
-            { name: "Mixed (변경사항 Unstaged로 유지)", value: "mixed" },
-            { name: "Hard (변경사항 모두 삭제)", value: "hard" },
+            { name: localeService.t("custom.resetSoft"), value: "soft" },
+            { name: localeService.t("custom.resetMixed"), value: "mixed" },
+            { name: localeService.t("custom.resetHard"), value: "hard" },
           ],
         },
       ]);
@@ -354,7 +394,7 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
       {
         type: "confirm",
         name: "continue",
-        message: "액션을 더 추가하시겠습니까?",
+        message: localeService.t("custom.addMoreActions"),
         default: false,
       },
     ]);
@@ -365,8 +405,10 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
   const newCommand: CustomCommand = { name, description, actions };
   configService.addCustomCommand(newCommand);
 
-  console.log(chalk.green(`\n✅ 커맨드 '${name}'이 추가되었습니다!`));
-  console.log(chalk.cyan(`사용법: eg ${name}`));
+  console.log(
+    chalk.green(`\n✅ '${name}'${localeService.t("custom.commandAdded")}`)
+  );
+  console.log(chalk.cyan(`${localeService.t("custom.commandUsage")} ${name}`));
 }
 
 async function removeCustomCommand(
@@ -375,7 +417,7 @@ async function removeCustomCommand(
   const config = configService.getConfig();
 
   if (config.customCommands.length === 0) {
-    console.log(chalk.yellow("삭제할 커맨드가 없습니다."));
+    console.log(chalk.yellow(localeService.t("custom.noCommandsToDelete")));
     return;
   }
 
@@ -383,7 +425,7 @@ async function removeCustomCommand(
     {
       type: "list",
       name: "selectedCommand",
-      message: "삭제할 커맨드를 선택하세요:",
+      message: localeService.t("custom.selectToDelete"),
       choices: config.customCommands.map((cmd) => ({
         name: `${cmd.name} - ${cmd.description}`,
         value: cmd.name,
@@ -395,7 +437,9 @@ async function removeCustomCommand(
     {
       type: "confirm",
       name: "confirm",
-      message: `정말로 '${selectedCommand}' 커맨드를 삭제하시겠습니까?`,
+      message: `'${selectedCommand}' ${localeService.t(
+        "custom.confirmDelete"
+      )}`,
       default: false,
     },
   ]);
@@ -403,30 +447,42 @@ async function removeCustomCommand(
   if (confirm) {
     configService.removeCustomCommand(selectedCommand);
   } else {
-    console.log(chalk.yellow("취소되었습니다."));
+    console.log(chalk.yellow(localeService.t("common.cancelled")));
   }
 }
 
 function showSettings(configService: ConfigService): void {
   const config = configService.getConfig();
 
-  console.log(chalk.cyan.bold("\n⚙️  Easy Git 설정:\n"));
-  console.log(chalk.white(`기본 브랜치: ${chalk.bold(config.defaultBranch)}`));
+  console.log(
+    chalk.cyan.bold(`\n${localeService.t("custom.settingsTitle")}\n`)
+  );
   console.log(
     chalk.white(
-      `자동 Stash: ${config.autoStash ? chalk.green("ON") : chalk.gray("OFF")}`
+      `${localeService.t("custom.defaultBranch")} ${chalk.bold(
+        config.defaultBranch
+      )}`
     )
   );
   console.log(
     chalk.white(
-      `브랜치 전환시 자동 Pull: ${
+      `${localeService.t("custom.autoStash")} ${
+        config.autoStash ? chalk.green("ON") : chalk.gray("OFF")
+      }`
+    )
+  );
+  console.log(
+    chalk.white(
+      `${localeService.t("custom.autoPull")} ${
         config.autoPullOnBranchSwitch ? chalk.green("ON") : chalk.gray("OFF")
       }`
     )
   );
   console.log(
     chalk.white(
-      `커스텀 커맨드 개수: ${chalk.bold(config.customCommands.length)}개`
+      `${localeService.t("custom.commandCount")} ${chalk.bold(
+        config.customCommands.length
+      )}`
     )
   );
   console.log();
@@ -437,8 +493,7 @@ async function resetSettings(configService: ConfigService): Promise<void> {
     {
       type: "confirm",
       name: "confirm",
-      message:
-        "설정을 기본값으로 초기화하시겠습니까? (모든 커스텀 커맨드가 삭제됩니다)",
+      message: localeService.t("custom.confirmReset"),
       default: false,
     },
   ]);
@@ -446,6 +501,6 @@ async function resetSettings(configService: ConfigService): Promise<void> {
   if (confirm) {
     configService.resetToDefault();
   } else {
-    console.log(chalk.yellow("취소되었습니다."));
+    console.log(chalk.yellow(localeService.t("common.cancelled")));
   }
 }

@@ -2,18 +2,19 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import path from "path";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function handleClone(): Promise<void> {
-  console.log(chalk.cyan.bold("\n📦 Git 저장소 클론\n"));
+  console.log(chalk.cyan.bold(`\n📦 ${localeService.t("clone.title")}\n`));
 
   const { repoUrl } = await inquirer.prompt([
     {
       type: "input",
       name: "repoUrl",
-      message: "클론할 저장소 URL을 입력하세요:",
+      message: localeService.t("clone.enterUrl"),
       validate: (input) => {
         if (!input.trim()) {
-          return "URL은 비워둘 수 없습니다.";
+          return localeService.t("clone.urlRequired");
         }
         return true;
       },
@@ -26,7 +27,7 @@ export async function handleClone(): Promise<void> {
     {
       type: "confirm",
       name: "useDefaultPath",
-      message: `현재 디렉토리에 '${defaultDirName}' 폴더로 클론하시겠습니까?`,
+      message: `'${defaultDirName}' ${localeService.t("clone.useDefaultPath")}`,
       default: true,
     },
   ]);
@@ -38,11 +39,11 @@ export async function handleClone(): Promise<void> {
       {
         type: "input",
         name: "customPath",
-        message: "클론할 경로를 입력하세요 (폴더명 또는 전체 경로):",
+        message: localeService.t("clone.enterPath"),
         default: defaultDirName,
         validate: (input) => {
           if (!input.trim()) {
-            return "경로는 비워둘 수 없습니다.";
+            return localeService.t("clone.pathRequired");
           }
           return true;
         },
@@ -57,20 +58,24 @@ export async function handleClone(): Promise<void> {
     const gitService = new GitService();
     await gitService.clone(repoUrl, localPath);
 
-    console.log(chalk.green(`\n✅ 저장소가 성공적으로 클론되었습니다!`));
+    console.log(chalk.green(`\n✅ ${localeService.t("clone.success")}`));
     console.log(
-      chalk.cyan(`📁 위치: ${path.resolve(localPath || defaultDirName)}`)
+      chalk.cyan(
+        `📁 ${localeService.t("clone.location")} ${path.resolve(
+          localPath || defaultDirName
+        )}`
+      )
     );
-    console.log(chalk.gray(`\n다음 명령어로 이동하세요:`));
+    console.log(chalk.gray(`\n${localeService.t("clone.moveCommand")}`));
     console.log(chalk.white(`   cd ${localPath || defaultDirName}`));
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ 클론 실패: ${error.message}`));
+    console.error(
+      chalk.red(`\n❌ ${localeService.t("clone.failed")} ${error.message}`)
+    );
 
     if (error.message.includes("already exists")) {
       console.log(
-        chalk.yellow(
-          "⚠️  해당 폴더가 이미 존재합니다. 다른 이름을 사용해주세요."
-        )
+        chalk.yellow(`⚠️  ${localeService.t("clone.alreadyExists")}`)
       );
     }
   }

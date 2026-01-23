@@ -3,6 +3,7 @@ import { promisify } from "util";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 const execAsync = promisify(exec);
 
@@ -20,12 +21,12 @@ export async function handlePR(gitService: GitService): Promise<void> {
       {
         type: "list",
         name: "action",
-        message: "Pull Request 작업을 선택하세요:",
+        message: localeService.t("pr.selectAction"),
         choices: [
-          { name: "🆕 새 PR 생성", value: "create" },
-          { name: "📋 PR 목록 보기", value: "list" },
-          { name: "🏠 PR 홈페이지 열기", value: "home" },
-          { name: "🔙 돌아가기", value: "back" },
+          { name: localeService.t("pr.createNew"), value: "create" },
+          { name: localeService.t("pr.viewList"), value: "list" },
+          { name: localeService.t("pr.openHome"), value: "home" },
+          { name: localeService.t("common.back"), value: "back" },
         ],
       },
     ]);

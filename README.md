@@ -1,32 +1,34 @@
 # 🚀 Easy Git
 
-터미널에서 Git을 더 쉽고 직관적으로 사용할 수 있는 인터랙티브 CLI 도구입니다.
+An interactive CLI tool to make Git easier to use in terminal.
 
-## ✨ 주요 기능
+## ✨ Key Features
 
-- 🎨 **인터랙티브 메뉴**: 화살표 키로 쉽게 선택하는 직관적인 UI
-- 📊 **상태 확인**: 깔끔한 색상으로 Git 상태를 한눈에 파악
-- ➕ **스마트 파일 추가**: 모든 파일 또는 선택적으로 파일 추가
-- 💾 **간편한 커밋**: 커밋할 파일 미리보기와 함께 메시지 작성
-- ⬆️⬇️ **Push/Pull**: 현재 브랜치를 자동 감지하여 푸시/풀
-- 🌿 **브랜치 관리**: 생성, 전환, 삭제를 한 곳에서
-- 📜 **로그 보기**: 커밋 히스토리를 보기 좋게 표시
-- 📦 **Stash 관리**: 변경사항 임시 저장 및 복원
-- 🔀 **Pull Request**: GitHub/GitLab/Bitbucket PR 생성 및 홈페이지 열기
-- 🌏 **한글 지원**: 모든 메시지가 한글로 제공
+- 🎨 **Interactive Menu**: Intuitive UI with arrow key navigation
+- 📊 **Status Check**: View Git status with clear color-coding
+- ➕ **Smart File Adding**: Add all files or select specific ones
+- 💾 **Easy Commits**: Preview staged files and write commit messages
+- ⬆️⬇️ **Push/Pull**: Auto-detect current branch for push/pull
+- 🌿 **Branch Management**: Create, switch, and delete branches in one place
+- 🔄 **Rebase**: Interactive rebase with conflict resolution support
+- ⏪ **Commit Revert/Reset**: Safely revert or reset commits
+- 📜 **View Logs**: Display commit history in a readable format
+- 📦 **Stash Management**: Temporarily save and restore changes
+- 🔀 **Pull Request**: Create PRs and open repository pages (GitHub/GitLab/Bitbucket)
+- 🌐 **Multi-language**: Supports English and Korean (한국어)
 
-### NPM으로 설치 (배포 후)
+## 📦 Installation
 
 ```bash
-npm install -g easy-git
+npm install -g @wassupsong/easy-git-cli
 ```
 
-## 🎯 사용법
+## 🎯 Usage
 
 ```bash
-# 두 가지 명령어 모두 사용 가능
+# Both commands work
 easy-git
-# 또는
+# or
 eg
 ```
 

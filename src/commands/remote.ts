@@ -1,19 +1,20 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function handleRemote(gitService: GitService): Promise<void> {
   const { action } = await inquirer.prompt([
     {
       type: "list",
       name: "action",
-      message: "원격 저장소 작업을 선택하세요:",
+      message: localeService.t("remote.selectAction"),
       choices: [
-        { name: "📋 원격 저장소 목록 보기", value: "list" },
-        { name: "➕ 원격 저장소 추가", value: "add" },
-        { name: "🗑️  원격 저장소 제거", value: "remove" },
-        { name: "🔄 Fetch (원격 정보 가져오기)", value: "fetch" },
-        { name: "← 돌아가기", value: "back" },
+        { name: localeService.t("remote.list"), value: "list" },
+        { name: localeService.t("remote.add"), value: "add" },
+        { name: localeService.t("remote.remove"), value: "remove" },
+        { name: localeService.t("remote.fetchAction"), value: "fetch" },
+        { name: localeService.t("common.back"), value: "back" },
       ],
     },
   ]);
@@ -39,17 +40,21 @@ export async function handleRemote(gitService: GitService): Promise<void> {
 async function showRemoteList(gitService: GitService): Promise<void> {
   const remotes = await gitService.getRemotes();
 
-  console.log(chalk.cyan.bold("\n📋 원격 저장소 목록:\n"));
+  console.log(chalk.cyan.bold(`\n${localeService.t("remote.listTitle")}\n`));
 
   if (remotes.length === 0) {
-    console.log(chalk.yellow("원격 저장소가 없습니다."));
+    console.log(chalk.yellow(localeService.t("remote.listEmpty")));
     return;
   }
 
   remotes.forEach((remote) => {
     console.log(chalk.green(`   ${remote.name}`));
-    console.log(chalk.gray(`   Fetch: ${remote.refs.fetch}`));
-    console.log(chalk.gray(`   Push:  ${remote.refs.push}`));
+    console.log(
+      chalk.gray(`   ${localeService.t("remote.fetch")} ${remote.refs.fetch}`)
+    );
+    console.log(
+      chalk.gray(`   ${localeService.t("remote.push")} ${remote.refs.push}`)
+    );
     console.log();
   });
 }
@@ -59,11 +64,11 @@ async function addRemote(gitService: GitService): Promise<void> {
     {
       type: "input",
       name: "remoteName",
-      message: "원격 저장소 이름을 입력하세요:",
+      message: localeService.t("remote.enterNamePrompt"),
       default: "origin",
       validate: (input) => {
         if (!input.trim()) {
-          return "이름은 비워둘 수 없습니다.";
+          return localeService.t("remote.nameRequired");
         }
         return true;
       },
@@ -71,10 +76,10 @@ async function addRemote(gitService: GitService): Promise<void> {
     {
       type: "input",
       name: "remoteUrl",
-      message: "원격 저장소 URL을 입력하세요:",
+      message: localeService.t("remote.enterUrlPrompt"),
       validate: (input) => {
         if (!input.trim()) {
-          return "URL은 비워둘 수 없습니다.";
+          return localeService.t("remote.urlRequired");
         }
         if (
           !input.includes("github.com") &&
@@ -83,9 +88,7 @@ async function addRemote(gitService: GitService): Promise<void> {
           !input.includes(".git")
         ) {
           console.log(
-            chalk.yellow(
-              "\n⚠️  일반적인 Git URL 형식이 아닙니다. 계속 진행합니다."
-            )
+            chalk.yellow(`\n⚠️  ${localeService.t("remote.urlWarning")}`)
           );
         }
         return true;
@@ -96,10 +99,12 @@ async function addRemote(gitService: GitService): Promise<void> {
   try {
     await gitService.addRemote(remoteName, remoteUrl);
     console.log(
-      chalk.green(`✅ 원격 저장소 '${remoteName}'이 추가되었습니다!`)
+      chalk.green(`✅ '${remoteName}'${localeService.t("remote.added")}`)
     );
   } catch (error: any) {
-    console.error(chalk.red(`❌ 추가 실패: ${error.message}`));
+    console.error(
+      chalk.red(`❌ ${localeService.t("remote.addFailed")} ${error.message}`)
+    );
   }
 }
 
@@ -107,7 +112,7 @@ async function removeRemote(gitService: GitService): Promise<void> {
   const remotes = await gitService.getRemotes();
 
   if (remotes.length === 0) {
-    console.log(chalk.yellow("제거할 원격 저장소가 없습니다."));
+    console.log(chalk.yellow(localeService.t("remote.removeNone")));
     return;
   }
 
@@ -115,7 +120,7 @@ async function removeRemote(gitService: GitService): Promise<void> {
     {
       type: "list",
       name: "selectedRemote",
-      message: "제거할 원격 저장소를 선택하세요:",
+      message: localeService.t("remote.selectToRemove"),
       choices: remotes.map((remote) => ({
         name: `${remote.name} (${remote.refs.fetch})`,
         value: remote.name,
@@ -127,31 +132,37 @@ async function removeRemote(gitService: GitService): Promise<void> {
     {
       type: "confirm",
       name: "confirm",
-      message: `정말로 '${selectedRemote}'을 제거하시겠습니까?`,
+      message: `'${selectedRemote}'${localeService.t(
+        "remote.confirmRemovePrompt"
+      )}`,
       default: false,
     },
   ]);
 
   if (!confirm) {
-    console.log(chalk.yellow("취소되었습니다."));
+    console.log(chalk.yellow(localeService.t("common.cancelled")));
     return;
   }
 
   try {
     await gitService.removeRemote(selectedRemote);
     console.log(
-      chalk.green(`✅ 원격 저장소 '${selectedRemote}'이 제거되었습니다!`)
+      chalk.green(`✅ '${selectedRemote}'${localeService.t("remote.removed")}`)
     );
   } catch (error: any) {
-    console.error(chalk.red(`❌ 제거 실패: ${error.message}`));
+    console.error(
+      chalk.red(`❌ ${localeService.t("remote.removeFailed")} ${error.message}`)
+    );
   }
 }
 
 async function fetchRemote(gitService: GitService): Promise<void> {
   try {
     await gitService.fetchAll();
-    console.log(chalk.green("✅ 원격 브랜치 정보를 가져왔습니다!"));
+    console.log(chalk.green(`✅ ${localeService.t("remote.fetchSuccess")}`));
   } catch (error: any) {
-    console.error(chalk.red(`❌ Fetch 실패: ${error.message}`));
+    console.error(
+      chalk.red(`❌ ${localeService.t("remote.fetchFailed")} ${error.message}`)
+    );
   }
 }

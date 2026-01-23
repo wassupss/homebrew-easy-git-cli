@@ -1,14 +1,16 @@
 import chalk from "chalk";
+import inquirer from "inquirer";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function displayStatus(gitService: GitService): Promise<void> {
   const status = await gitService.getStatus();
 
-  console.log(chalk.bold.cyan("\n📊 Git 상태\n"));
+  console.log(chalk.bold.cyan(`\n${localeService.t("status.title")}\n`));
 
   // Staged files
   if (status.staged.length > 0) {
-    console.log(chalk.green.bold("✅ Staged (커밋 준비됨):"));
+    console.log(chalk.green.bold(localeService.t("status.staged")));
     status.staged.forEach((file: string) =>
       console.log(chalk.green(`   + ${file}`))
     );
@@ -17,7 +19,7 @@ export async function displayStatus(gitService: GitService): Promise<void> {
 
   // Modified files
   if (status.modified.length > 0) {
-    console.log(chalk.yellow.bold("📝 Modified (수정됨):"));
+    console.log(chalk.yellow.bold(localeService.t("status.modified")));
     status.modified.forEach((file: string) =>
       console.log(chalk.yellow(`   M ${file}`))
     );
@@ -26,7 +28,7 @@ export async function displayStatus(gitService: GitService): Promise<void> {
 
   // New files
   if (status.not_added.length > 0) {
-    console.log(chalk.red.bold("❓ Untracked (추적되지 않음):"));
+    console.log(chalk.red.bold(localeService.t("status.untracked")));
     status.not_added.forEach((file: string) =>
       console.log(chalk.red(`   ? ${file}`))
     );
@@ -35,7 +37,7 @@ export async function displayStatus(gitService: GitService): Promise<void> {
 
   // Deleted files
   if (status.deleted.length > 0) {
-    console.log(chalk.red.bold("🗑️  Deleted (삭제됨):"));
+    console.log(chalk.red.bold(localeService.t("status.deleted")));
     status.deleted.forEach((file: string) =>
       console.log(chalk.red(`   D ${file}`))
     );
@@ -44,7 +46,7 @@ export async function displayStatus(gitService: GitService): Promise<void> {
 
   // Conflicted files
   if (status.conflicted.length > 0) {
-    console.log(chalk.magenta.bold("⚠️  Conflicted (충돌):"));
+    console.log(chalk.magenta.bold(localeService.t("status.conflicted")));
     status.conflicted.forEach((file: string) =>
       console.log(chalk.magenta(`   ! ${file}`))
     );
@@ -58,22 +60,29 @@ export async function displayStatus(gitService: GitService): Promise<void> {
     status.deleted.length === 0 &&
     status.conflicted.length === 0
   ) {
-    console.log(chalk.green("✨ 작업 디렉토리가 깨끗합니다!\n"));
+    console.log(chalk.green(`${localeService.t("status.clean")}\n`));
   }
 
   // Branch info
-  console.log(chalk.blue(`📍 현재 브랜치: ${chalk.bold(status.current)}`));
+  console.log(
+    chalk.blue(
+      `${localeService.t("status.currentBranch")} ${chalk.bold(status.current)}`
+    )
+  );
   if (status.ahead > 0) {
-    console.log(
-      chalk.cyan(`   ⬆️  로컬이 원격보다 ${status.ahead}개 커밋 앞서 있습니다.`)
-    );
+    console.log(chalk.cyan(`   ⬆️  ${status.ahead} commits ahead of remote`));
   }
   if (status.behind > 0) {
-    console.log(
-      chalk.cyan(
-        `   ⬇️  로컬이 원격보다 ${status.behind}개 커밋 뒤에 있습니다.`
-      )
-    );
+    console.log(chalk.cyan(`   ⬇️  ${status.behind} commits behind remote`));
   }
   console.log();
+
+  // 돌아가기 프롬프트
+  await inquirer.prompt([
+    {
+      type: "input",
+      name: "continue",
+      message: localeService.t("status.pressEnter"),
+    },
+  ]);
 }

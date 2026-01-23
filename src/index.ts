@@ -18,6 +18,7 @@ import { handleClone } from "./commands/clone";
 import { handleCustomCommands, executeCustomCommand } from "./commands/custom";
 import { handlePR } from "./commands/pr";
 import { handleRebase } from "./commands/rebase";
+import { localeService } from "./services/locale-service";
 
 const gitService = new GitService();
 const configService = new ConfigService();
@@ -26,7 +27,7 @@ async function displayWelcome() {
   const welcome = boxen(
     chalk.bold.cyan("Easy Git") +
       "\n\n" +
-      chalk.gray("Git을 더 쉽게 사용하세요!"),
+      chalk.gray(localeService.t("menu.welcome")),
     {
       padding: 1,
       margin: 1,
@@ -37,28 +38,59 @@ async function displayWelcome() {
   console.log(welcome);
 }
 
+async function handleLanguageSettings(): Promise<void> {
+  const currentLang = localeService.getLanguage();
+
+  const { language } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "language",
+      message: localeService.t("language.select"),
+      choices: [
+        {
+          name: `${localeService.t("language.korean")} ${
+            currentLang === "ko" ? "✓" : ""
+          }`,
+          value: "ko",
+        },
+        {
+          name: `${localeService.t("language.english")} ${
+            currentLang === "en" ? "✓" : ""
+          }`,
+          value: "en",
+        },
+      ],
+    },
+  ]);
+
+  if (language !== currentLang) {
+    localeService.setLanguage(language);
+    console.log(chalk.green(`\n✅ ${localeService.t("language.changed")}\n`));
+  }
+}
+
 async function showMainMenu(): Promise<void> {
   try {
     // Git 저장소 확인
     const isRepo = await gitService.isGitRepository();
 
     if (!isRepo) {
-      console.log(chalk.red("❌ Git 저장소가 아닙니다."));
+      console.log(chalk.red(`❌ ${localeService.t("error.notGitRepo")}`));
       const { action } = await inquirer.prompt([
         {
           type: "list",
           name: "action",
-          message: "어떻게 하시겠습니까?",
+          message: localeService.t("menu.whatToDo"),
           choices: [
-            { name: "새 Git 저장소 초기화", value: "init" },
-            { name: "종료", value: "exit" },
+            { name: localeService.t("menu.initRepo"), value: "init" },
+            { name: localeService.t("menu.exit"), value: "exit" },
           ],
         },
       ]);
 
       if (action === "init") {
         await gitService.init();
-        console.log(chalk.green("✅ Git 저장소가 초기화되었습니다."));
+        console.log(chalk.green(`✅ ${localeService.t("init.success")}`));
         return showMainMenu();
       } else {
         return;
@@ -67,29 +99,37 @@ async function showMainMenu(): Promise<void> {
 
     // 현재 브랜치 정보 표시
     const currentBranch = await gitService.getCurrentBranch();
-    console.log(chalk.blue(`\n📍 현재 브랜치: ${chalk.bold(currentBranch)}\n`));
+    console.log(
+      chalk.blue(
+        `\n📍 ${localeService.t("menu.currentBranch")}: ${chalk.bold(
+          currentBranch
+        )}\n`
+      )
+    );
 
     const { action } = await inquirer.prompt([
       {
         type: "list",
         name: "action",
-        message: "무엇을 하시겠습니까?",
+        message: localeService.t("menu.whatToDo"),
+        loop: false,
         choices: [
-          { name: "📊 상태 확인 (Status)", value: "status" },
-          { name: "➕ 파일 추가 (Add)", value: "add" },
-          { name: "💾 커밋 (Commit)", value: "commit" },
-          { name: "⬆️  푸시 (Push)", value: "push" },
-          { name: "⬇️  풀 (Pull)", value: "pull" },
-          { name: "🌿 브랜치 관리", value: "branch" },
-          { name: "🔄 Rebase", value: "rebase" },
-          { name: "📜 로그 보기", value: "log" },
-          { name: "📦 Stash 관리", value: "stash" },
-          { name: "🌐 Remote 관리", value: "remote" },
-          { name: "🔀 Pull Request 생성", value: "pr" },
+          { name: localeService.t("menu.status"), value: "status" },
+          { name: localeService.t("menu.add"), value: "add" },
+          { name: localeService.t("menu.commit"), value: "commit" },
+          { name: localeService.t("menu.push"), value: "push" },
+          { name: localeService.t("menu.pull"), value: "pull" },
+          { name: localeService.t("menu.branch"), value: "branch" },
+          { name: localeService.t("menu.rebase"), value: "rebase" },
+          { name: localeService.t("menu.log"), value: "log" },
+          { name: localeService.t("menu.stash"), value: "stash" },
+          { name: localeService.t("menu.remote"), value: "remote" },
+          { name: localeService.t("menu.pr"), value: "pr" },
           new inquirer.Separator(),
-          { name: "⚡ 커스텀 커맨드", value: "custom" },
+          { name: localeService.t("menu.custom"), value: "custom" },
+          { name: localeService.t("menu.language"), value: "language" },
           new inquirer.Separator(),
-          { name: "🚪 종료", value: "exit" },
+          { name: localeService.t("menu.exit"), value: "exit" },
         ],
         pageSize: 15,
       },
@@ -132,31 +172,25 @@ async function showMainMenu(): Promise<void> {
       case "custom":
         await handleCustomCommands(gitService, configService);
         break;
+      case "language":
+        await handleLanguageSettings();
+        break;
       case "exit":
-        console.log(chalk.cyan("\n👋 안녕히 가세요!\n"));
+        console.log(chalk.cyan(`\n👋 ${localeService.t("menu.goodbye")}\n`));
         return;
     }
 
-    // 메뉴로 돌아가기
-    const { continueAction } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "continueAction",
-        message: "메인 메뉴로 돌아가시겠습니까?",
-        default: true,
-      },
-    ]);
-
-    if (continueAction) {
-      return showMainMenu();
-    }
+    // 자동으로 메인 메뉴로 돌아가기 (확인 프롬프트 제거)
+    return showMainMenu();
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ 오류: ${error.message}\n`));
+    console.error(
+      chalk.red(`\n❌ ${localeService.t("error.generic")}: ${error.message}\n`)
+    );
     const { retry } = await inquirer.prompt([
       {
         type: "confirm",
         name: "retry",
-        message: "다시 시도하시겠습니까?",
+        message: localeService.t("error.retry"),
         default: true,
       },
     ]);
@@ -183,22 +217,32 @@ async function main() {
     if (customCommand) {
       const isRepo = await gitService.isGitRepository();
       if (!isRepo) {
-        console.log(chalk.red("❌ Git 저장소가 아닙니다."));
-        console.log(chalk.yellow("Git 저장소 디렉토리에서 실행해주세요."));
+        console.log(chalk.red(`❌ ${localeService.t("error.notGitRepo")}`));
+        console.log(chalk.yellow(localeService.t("error.runInGitRepo")));
         return;
       }
 
       await executeCustomCommand(commandName, gitService, configService);
       return;
     } else {
-      console.log(chalk.red(`❌ 알 수 없는 명령어: ${commandName}`));
-      console.log(chalk.gray("사용 가능한 명령어:"));
-      console.log(chalk.white("  eg              - 인터랙티브 메뉴"));
-      console.log(chalk.white("  eg clone        - 저장소 클론"));
+      console.log(
+        chalk.red(
+          `❌ ${localeService.t("error.unknownCommand")}: ${commandName}`
+        )
+      );
+      console.log(chalk.gray(localeService.t("cli.availableCommands")));
+      console.log(
+        chalk.white(
+          `  eg              - ${localeService.t("cli.interactiveMode")}`
+        )
+      );
+      console.log(
+        chalk.white(`  eg clone        - ${localeService.t("cli.cloneRepo")}`)
+      );
 
       const config = configService.getConfig();
       if (config.customCommands.length > 0) {
-        console.log(chalk.white("\n커스텀 명령어:"));
+        console.log(chalk.white(`\n${localeService.t("cli.customCommands")}:`));
         config.customCommands.forEach((cmd) => {
           console.log(
             chalk.cyan(`  eg ${cmd.name.padEnd(12)} - ${cmd.description}`)

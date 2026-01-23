@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function handleAdd(gitService: GitService): Promise<void> {
   const status = await gitService.getStatus();
@@ -8,7 +9,7 @@ export async function handleAdd(gitService: GitService): Promise<void> {
   const allFiles = [...status.not_added, ...status.modified, ...status.deleted];
 
   if (allFiles.length === 0) {
-    console.log(chalk.yellow("추가할 파일이 없습니다."));
+    console.log(chalk.yellow(localeService.t("add.noFiles")));
     return;
   }
 
@@ -16,11 +17,11 @@ export async function handleAdd(gitService: GitService): Promise<void> {
     {
       type: "list",
       name: "addChoice",
-      message: "어떻게 추가하시겠습니까?",
+      message: localeService.t("add.howToAdd"),
       choices: [
-        { name: "모든 파일 추가", value: "all" },
-        { name: "특정 파일 선택", value: "select" },
-        { name: "취소", value: "cancel" },
+        { name: localeService.t("add.allFiles"), value: "all" },
+        { name: localeService.t("add.selectFiles"), value: "select" },
+        { name: localeService.t("common.cancel"), value: "cancel" },
       ],
     },
   ]);
@@ -31,7 +32,7 @@ export async function handleAdd(gitService: GitService): Promise<void> {
 
   if (addChoice === "all") {
     await gitService.addAll();
-    console.log(chalk.green("✅ 모든 파일이 추가되었습니다."));
+    console.log(chalk.green(`✅ ${localeService.t("add.allAdded")}`));
     return;
   }
 
@@ -40,14 +41,14 @@ export async function handleAdd(gitService: GitService): Promise<void> {
       {
         type: "checkbox",
         name: "selectedFiles",
-        message: "추가할 파일을 선택하세요 (스페이스바로 선택):",
+        message: localeService.t("add.selectFilesPrompt"),
         choices: allFiles.map((file) => ({
           name: file,
           value: file,
         })),
         validate: (answer) => {
           if (answer.length === 0) {
-            return "최소 1개 이상의 파일을 선택해야 합니다.";
+            return localeService.t("add.minOneFile");
           }
           return true;
         },
@@ -56,7 +57,9 @@ export async function handleAdd(gitService: GitService): Promise<void> {
 
     await gitService.add(selectedFiles);
     console.log(
-      chalk.green(`✅ ${selectedFiles.length}개 파일이 추가되었습니다.`)
+      chalk.green(
+        `✅ ${selectedFiles.length}${localeService.t("add.filesAdded")}`
+      )
     );
   }
 }

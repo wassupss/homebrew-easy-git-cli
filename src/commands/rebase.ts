@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { GitService } from "../services/git-service";
+import { localeService } from "../services/locale-service";
 
 export async function handleRebase(gitService: GitService): Promise<void> {
   try {
@@ -8,13 +9,13 @@ export async function handleRebase(gitService: GitService): Promise<void> {
       {
         type: "list",
         name: "action",
-        message: "Rebase 작업을 선택하세요:",
+        message: localeService.t("rebase.selectAction"),
         choices: [
-          { name: "🔄 브랜치 Rebase", value: "rebase" },
-          { name: "▶️  Rebase 계속 진행", value: "continue" },
-          { name: "⏭️  현재 커밋 건너뛰기", value: "skip" },
-          { name: "❌ Rebase 취소", value: "abort" },
-          { name: "🔙 돌아가기", value: "back" },
+          { name: localeService.t("rebase.branch"), value: "rebase" },
+          { name: localeService.t("rebase.continue"), value: "continue" },
+          { name: localeService.t("rebase.skip"), value: "skip" },
+          { name: localeService.t("rebase.abort"), value: "abort" },
+          { name: localeService.t("common.back"), value: "back" },
         ],
       },
     ]);
