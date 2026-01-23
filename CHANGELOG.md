@@ -3,11 +3,13 @@
 ## [Unreleased]
 
 ### Added
+
 - 🍺 Homebrew distribution support with standard tap naming
 - 🛠️ `npm run release` - complete local release automation
 - 📚 Simplified documentation
 
 ### Changed
+
 - Switched to local-only releases (no GitHub Actions)
 - Formula updates automatically during release
 - Repository renamed to `homebrew-easy-git-cli` for Homebrew tap compatibility
@@ -18,6 +20,7 @@
 ## [1.1.0] - 2025-01-23
 
 ### Added
+
 - Multi-language support (English/Korean)
 - Pull Request functionality (GitHub/GitLab/Bitbucket)
 - Rebase with conflict resolution
@@ -27,6 +30,7 @@
 - Language settings menu
 
 ### Changed
+
 - Renamed "Add" menu to "Staging" with unstage support
 - Moved "Log View" into Commit submenu
 - Removed "Press Enter to continue" prompts
@@ -37,6 +41,7 @@
 ## [1.0.0] - Initial Release
 
 ### Added
+
 - Interactive Git CLI with arrow key navigation
 - Status checking with color-coded output
 - File staging and commits
