@@ -33,8 +33,3 @@ rm Formula/easy-git.rb.bak
 
 echo "✅ Formula updated successfully!"
 echo ""
-echo "📋 Next steps:"
-echo "  1. Test the formula: brew install --build-from-source Formula/easy-git.rb"
-echo "  2. Commit changes: git add Formula/easy-git.rb && git commit -m 'chore: update formula to v$VERSION'"
-echo "  3. Push to GitHub: git push"
-echo ""

@@ -86,6 +86,12 @@ echo -e "${CYAN}🍺 Updating Homebrew Formula...${NC}"
 bash scripts/update-formula.sh
 
 echo ""
+echo -e "${CYAN}📝 Committing Formula changes...${NC}"
+git add Formula/easy-git.rb
+git commit -m "chore: update Homebrew formula to v${NEW_VERSION}"
+echo -e "${GREEN}✅ Formula committed!${NC}"
+
+echo ""
 echo -e "${CYAN}🚀 Pushing to GitHub...${NC}"
 git push
 git push --tags
