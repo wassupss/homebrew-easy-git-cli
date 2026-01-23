@@ -149,35 +149,30 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 🚀 For Maintainers
 
-### First Time Setup (5 minutes)
-
-1. **Add NPM_TOKEN to GitHub Secrets**
-
-   - Create token at: https://www.npmjs.com/settings/wassupsong/tokens
-   - Add to: https://github.com/wassupss/easy-git-cli/settings/secrets/actions
-   - Name: `NPM_TOKEN`
-
-2. **Enable GitHub Actions write permissions**
-
-   - Go to: https://github.com/wassupss/easy-git-cli/settings/actions
-   - Select "Read and write permissions"
-
-3. **Done!** Now you can release with one command.
-
 ### Release New Version
 
 ```bash
 npm run release
-# Answer prompts, everything else is automated!
 ```
 
-GitHub Actions will automatically:
+This will:
 
-- ✅ Publish to npm
-- ✅ Create GitHub Release
-- ✅ Update Homebrew Formula
+- ✅ Test, build, and bump version
+- ✅ Publish to npm (you'll enter 2FA if needed)
+- ✅ Update Homebrew Formula automatically
+- ✅ Push to GitHub
 
-See [GITHUB_SETUP.md](GITHUB_SETUP.md) and [RELEASE.md](RELEASE.md) for details.
+**No GitHub Actions needed!** Everything runs locally.
+
+See [RELEASE.md](RELEASE.md) for details.
+
+## 💡 사용 팁
+
+# Answer prompts, everything else is automated!
+
+**No GitHub Actions needed!** Everything runs locally.
+
+See [RELEASE.md](RELEASE.md) for details.
 
 ## 💡 사용 팁
 
