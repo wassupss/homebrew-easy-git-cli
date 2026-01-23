@@ -419,4 +419,71 @@ export class GitService {
   async getGraph(maxCount: number = 20): Promise<string> {
     return await this.git.getGraph(maxCount);
   }
+
+  // Rollback 관련 메서드
+  async revertCommit(commitHash: string): Promise<void> {
+    const spinner = ora(
+      `커밋 ${commitHash.substring(0, 7)} 되돌리는 중...`
+    ).start();
+    try {
+      await this.git.revert(commitHash);
+      spinner.succeed(`커밋 ${commitHash.substring(0, 7)} 되돌리기 완료`);
+    } catch (error: any) {
+      spinner.fail("커밋 되돌리기 실패");
+      throw error;
+    }
+  }
+
+  async resetToCommit(
+    commitHash: string,
+    mode: "soft" | "mixed" | "hard"
+  ): Promise<void> {
+    const spinner = ora(
+      `커밋 ${commitHash.substring(0, 7)}로 리셋 중 (${mode})...`
+    ).start();
+    try {
+      switch (mode) {
+        case "soft":
+          await this.git.resetSoft(commitHash);
+          break;
+        case "mixed":
+          await this.git.resetMixed(commitHash);
+          break;
+        case "hard":
+          await this.git.resetHard(commitHash);
+          break;
+      }
+      spinner.succeed(
+        `커밋 ${commitHash.substring(0, 7)}로 리셋 완료 (${mode})`
+      );
+    } catch (error: any) {
+      spinner.fail("리셋 실패");
+      throw error;
+    }
+  }
+
+  async undoLastCommit(mode: "soft" | "mixed" | "hard"): Promise<void> {
+    const spinner = ora(`마지막 커밋 취소 중 (${mode})...`).start();
+    try {
+      switch (mode) {
+        case "soft":
+          await this.git.resetSoft("HEAD~1");
+          spinner.succeed("마지막 커밋 취소됨 (변경사항은 Staged 상태로 유지)");
+          break;
+        case "mixed":
+          await this.git.resetMixed("HEAD~1");
+          spinner.succeed(
+            "마지막 커밋 취소됨 (변경사항은 Unstaged 상태로 유지)"
+          );
+          break;
+        case "hard":
+          await this.git.resetHard("HEAD~1");
+          spinner.succeed("마지막 커밋 취소됨 (변경사항 모두 삭제됨)");
+          break;
+      }
+    } catch (error: any) {
+      spinner.fail("커밋 취소 실패");
+      throw error;
+    }
+  }
 }

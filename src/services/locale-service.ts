@@ -79,6 +79,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menu.pull": "⬇️  풀 (Pull)",
     "menu.branch": "🌿 브랜치 관리",
     "menu.rebase": "🔄 Rebase",
+    "menu.rollback": "⏮️  Rollback (되돌리기)",
     "menu.stash": "📦 Stash 관리",
     "menu.remote": "🌐 Remote 관리",
     "menu.pr": "🔀 Pull Request",
@@ -153,6 +154,37 @@ const translations: Record<Language, Record<string, string>> = {
     "rebase.continue": "▶️  Rebase 계속 진행",
     "rebase.skip": "⏭️  현재 커밋 건너뛰기",
     "rebase.abort": "❌ Rebase 취소",
+
+    // Rollback 메뉴
+    "rollback.selectAction": "Rollback 작업을 선택하세요:",
+    "rollback.revert": "🔄 Revert (커밋 되돌리기 - 새 커밋 생성)",
+    "rollback.resetSoft": "↩️  Reset --soft (변경사항 Staged로 유지)",
+    "rollback.resetMixed": "↩️  Reset --mixed (변경사항 Unstaged로 유지)",
+    "rollback.resetHard": "⚠️  Reset --hard (변경사항 모두 삭제)",
+    "rollback.undoLastCommit": "⏪ 마지막 커밋 취소",
+    "rollback.error": "Rollback 작업 실패",
+    "rollback.recentCommits": "최근 커밋 목록",
+    "rollback.noCommits": "커밋 히스토리가 없습니다.",
+    "rollback.selectCommitToRevert": "되돌릴 커밋을 선택하세요:",
+    "rollback.confirmRevert": "선택한 커밋을 되돌리시겠습니까?",
+    "rollback.revertSuccess": "커밋 되돌리기 완료",
+    "rollback.selectCommitToReset": "리셋할 커밋을 선택하세요:",
+    "rollback.confirmReset":
+      "정말로 리셋하시겠습니까? 이 작업은 되돌릴 수 없습니다!",
+    "rollback.resetSuccess": "리셋 완료",
+    "rollback.resetWarning.soft":
+      "Soft Reset: 변경사항은 Staged 상태로 유지됩니다. (다시 커밋 가능)",
+    "rollback.resetWarning.mixed":
+      "Mixed Reset: 변경사항은 Unstaged 상태로 유지됩니다. (다시 add 필요)",
+    "rollback.resetWarning.hard":
+      "Hard Reset: ⚠️  모든 변경사항이 삭제됩니다! 이 작업은 되돌릴 수 없습니다!",
+    "rollback.lastCommit": "마지막 커밋",
+    "rollback.selectUndoMode": "어떤 방식으로 취소하시겠습니까?",
+    "rollback.undoMode.soft": "Soft - 변경사항 Staged로 유지",
+    "rollback.undoMode.mixed": "Mixed - 변경사항 Unstaged로 유지",
+    "rollback.undoMode.hard": "Hard - 변경사항 모두 삭제 ⚠️",
+    "rollback.confirmUndo": "정말로 마지막 커밋을 취소하시겠습니까?",
+    "rollback.undoSuccess": "마지막 커밋이 취소되었습니다",
 
     // Status
     "status.title": "📊 Git 상태",
@@ -408,6 +440,7 @@ const translations: Record<Language, Record<string, string>> = {
     "menu.pull": "⬇️  Pull",
     "menu.branch": "🌿 Branch Management",
     "menu.rebase": "🔄 Rebase",
+    "menu.rollback": "⏮️  Rollback",
     "menu.stash": "📦 Stash Management",
     "menu.remote": "🌐 Remote Management",
     "menu.pr": "🔀 Pull Request",
@@ -482,6 +515,38 @@ const translations: Record<Language, Record<string, string>> = {
     "rebase.continue": "▶️  Continue Rebase",
     "rebase.skip": "⏭️  Skip Current Commit",
     "rebase.abort": "❌ Abort Rebase",
+
+    // Rollback 메뉴
+    "rollback.selectAction": "Select rollback action:",
+    "rollback.revert": "🔄 Revert (Create new commit to undo changes)",
+    "rollback.resetSoft": "↩️  Reset --soft (Keep changes staged)",
+    "rollback.resetMixed": "↩️  Reset --mixed (Keep changes unstaged)",
+    "rollback.resetHard": "⚠️  Reset --hard (Delete all changes)",
+    "rollback.undoLastCommit": "⏪ Undo Last Commit",
+    "rollback.error": "Rollback operation failed",
+    "rollback.recentCommits": "Recent Commits",
+    "rollback.noCommits": "No commit history found.",
+    "rollback.selectCommitToRevert": "Select commit to revert:",
+    "rollback.confirmRevert":
+      "Are you sure you want to revert the selected commit?",
+    "rollback.revertSuccess": "Commit reverted successfully",
+    "rollback.selectCommitToReset": "Select commit to reset to:",
+    "rollback.confirmReset":
+      "Are you sure you want to reset? This action cannot be undone!",
+    "rollback.resetSuccess": "Reset completed",
+    "rollback.resetWarning.soft":
+      "Soft Reset: Changes will be kept in staged state. (Can be committed again)",
+    "rollback.resetWarning.mixed":
+      "Mixed Reset: Changes will be kept in unstaged state. (Need to add again)",
+    "rollback.resetWarning.hard":
+      "Hard Reset: ⚠️  All changes will be deleted! This action cannot be undone!",
+    "rollback.lastCommit": "Last Commit",
+    "rollback.selectUndoMode": "How would you like to undo?",
+    "rollback.undoMode.soft": "Soft - Keep changes staged",
+    "rollback.undoMode.mixed": "Mixed - Keep changes unstaged",
+    "rollback.undoMode.hard": "Hard - Delete all changes ⚠️",
+    "rollback.confirmUndo": "Are you sure you want to undo the last commit?",
+    "rollback.undoSuccess": "Last commit has been undone",
 
     // Status
     "status.title": "📊 Git Status",

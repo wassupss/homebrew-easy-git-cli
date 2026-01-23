@@ -18,6 +18,7 @@ import { handleClone } from "./commands/clone";
 import { handleCustomCommands, executeCustomCommand } from "./commands/custom";
 import { handlePR } from "./commands/pr";
 import { handleRebase } from "./commands/rebase";
+import { handleRollback } from "./commands/rollback";
 import { localeService } from "./services/locale-service";
 
 const gitService = new GitService();
@@ -121,6 +122,7 @@ async function showMainMenu(): Promise<void> {
           { name: localeService.t("menu.pull"), value: "pull" },
           { name: localeService.t("menu.branch"), value: "branch" },
           { name: localeService.t("menu.rebase"), value: "rebase" },
+          { name: localeService.t("menu.rollback"), value: "rollback" },
           { name: localeService.t("menu.stash"), value: "stash" },
           { name: localeService.t("menu.remote"), value: "remote" },
           { name: localeService.t("menu.pr"), value: "pr" },
@@ -155,6 +157,9 @@ async function showMainMenu(): Promise<void> {
         break;
       case "rebase":
         await handleRebase(gitService);
+        break;
+      case "rollback":
+        await handleRollback(gitService);
         break;
       case "stash":
         await handleStash(gitService);
