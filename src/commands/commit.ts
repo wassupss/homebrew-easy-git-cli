@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { GitService } from "../services/git-service";
 import { localeService } from "../services/locale-service";
+import { handleLog } from "./log";
 
 export async function handleCommit(gitService: GitService): Promise<void> {
   const { action } = await inquirer.prompt([
@@ -11,6 +12,8 @@ export async function handleCommit(gitService: GitService): Promise<void> {
       message: localeService.t("commit.selectAction"),
       choices: [
         { name: localeService.t("commit.createNew"), value: "commit" },
+        { name: localeService.t("commit.viewLog"), value: "log" },
+        { name: localeService.t("commit.viewGraph"), value: "graph" },
         { name: localeService.t("commit.revert"), value: "revert" },
         { name: localeService.t("commit.reset"), value: "reset" },
         { name: localeService.t("common.back"), value: "back" },
@@ -25,6 +28,12 @@ export async function handleCommit(gitService: GitService): Promise<void> {
   switch (action) {
     case "commit":
       await createCommit(gitService);
+      break;
+    case "log":
+      await handleLog(gitService);
+      break;
+    case "graph":
+      await viewGraph(gitService);
       break;
     case "revert":
       await revertCommit(gitService);
@@ -67,6 +76,41 @@ async function createCommit(gitService: GitService): Promise<void> {
 
   await gitService.commit(commitMessage);
   console.log(chalk.green("✅ 커밋이 완료되었습니다!"));
+}
+
+async function viewGraph(gitService: GitService): Promise<void> {
+  const { count } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "count",
+      message: localeService.t("commit.selectGraphCount"),
+      choices: [
+        { name: localeService.t("commit.graph10"), value: 10 },
+        { name: localeService.t("commit.graph20"), value: 20 },
+        { name: localeService.t("commit.graph30"), value: 30 },
+        { name: localeService.t("commit.graph50"), value: 50 },
+      ],
+    },
+  ]);
+
+  console.log(chalk.cyan.bold(`\n${localeService.t("commit.graphTitle")}\n`));
+
+  try {
+    const graph = await gitService.getGraph(count);
+    console.log(graph);
+  } catch (error: any) {
+    console.log(chalk.yellow(`\n⚠️  ${localeService.t("commit.noCommits")}`));
+    return;
+  }
+
+  console.log();
+  await inquirer.prompt([
+    {
+      type: "input",
+      name: "continue",
+      message: localeService.t("status.pressEnter"),
+    },
+  ]);
 }
 
 async function revertCommit(gitService: GitService): Promise<void> {

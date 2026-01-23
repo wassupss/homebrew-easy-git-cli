@@ -115,13 +115,12 @@ async function showMainMenu(): Promise<void> {
         loop: false,
         choices: [
           { name: localeService.t("menu.status"), value: "status" },
-          { name: localeService.t("menu.add"), value: "add" },
+          { name: localeService.t("menu.staging"), value: "staging" },
           { name: localeService.t("menu.commit"), value: "commit" },
           { name: localeService.t("menu.push"), value: "push" },
           { name: localeService.t("menu.pull"), value: "pull" },
           { name: localeService.t("menu.branch"), value: "branch" },
           { name: localeService.t("menu.rebase"), value: "rebase" },
-          { name: localeService.t("menu.log"), value: "log" },
           { name: localeService.t("menu.stash"), value: "stash" },
           { name: localeService.t("menu.remote"), value: "remote" },
           { name: localeService.t("menu.pr"), value: "pr" },
@@ -139,7 +138,7 @@ async function showMainMenu(): Promise<void> {
       case "status":
         await displayStatus(gitService);
         break;
-      case "add":
+      case "staging":
         await handleAdd(gitService);
         break;
       case "commit":
@@ -156,9 +155,6 @@ async function showMainMenu(): Promise<void> {
         break;
       case "rebase":
         await handleRebase(gitService);
-        break;
-      case "log":
-        await handleLog(gitService);
         break;
       case "stash":
         await handleStash(gitService);

@@ -164,6 +164,14 @@ export class GitExecutor {
     await this.execute("git add .");
   }
 
+  async reset(): Promise<void> {
+    await this.execute("git reset");
+  }
+
+  async unstageFile(file: string): Promise<void> {
+    await this.execute(`git reset HEAD "${file}"`);
+  }
+
   async commit(message: string): Promise<void> {
     const escapedMessage = message.replace(/"/g, '\\"');
     await this.execute(`git commit -m "${escapedMessage}"`);
@@ -372,5 +380,21 @@ export class GitExecutor {
   async resetHard(commitHash?: string): Promise<void> {
     const target = commitHash || "HEAD~1";
     await this.execute(`git reset --hard ${target}`);
+  }
+
+  async merge(branch: string, noFf: boolean = false): Promise<void> {
+    const ffFlag = noFf ? "--no-ff" : "";
+    await this.execute(`git merge ${branch} ${ffFlag}`.trim());
+  }
+
+  async mergeAbort(): Promise<void> {
+    await this.execute("git merge --abort");
+  }
+
+  async getGraph(maxCount: number = 20): Promise<string> {
+    const format = "%C(auto)%h %C(blue)%an %C(green)%ar %C(auto)%d %C(reset)%s";
+    return await this.execute(
+      `git log --graph --oneline --decorate --all -${maxCount} --pretty=format:"${format}"`
+    );
   }
 }

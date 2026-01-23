@@ -13,6 +13,7 @@ export async function handleBranch(gitService: GitService): Promise<void> {
         { name: localeService.t("branch.list"), value: "list" },
         { name: localeService.t("branch.create"), value: "create" },
         { name: localeService.t("branch.switch"), value: "switch" },
+        { name: localeService.t("branch.merge"), value: "merge" },
         { name: localeService.t("branch.delete"), value: "delete" },
         { name: localeService.t("common.back"), value: "back" },
       ],
@@ -28,6 +29,9 @@ export async function handleBranch(gitService: GitService): Promise<void> {
       break;
     case "switch":
       await switchBranch(gitService);
+      break;
+    case "merge":
+      await mergeBranch(gitService);
       break;
     case "delete":
       await deleteBranch(gitService);
@@ -154,4 +158,117 @@ async function deleteBranch(gitService: GitService): Promise<void> {
   console.log(
     chalk.green(`✅ ${selectedBranch}${localeService.t("branch.deleted")}`)
   );
+}
+
+async function mergeBranch(gitService: GitService): Promise<void> {
+  const branches = await gitService.getBranches();
+  const currentBranch = branches.current;
+
+  // 현재 브랜치를 제외한 다른 브랜치들
+  const otherBranches = branches.all.filter((b) => b !== currentBranch);
+
+  if (otherBranches.length === 0) {
+    console.log(chalk.yellow(localeService.t("branch.noOtherBranches")));
+    return;
+  }
+
+  console.log(
+    chalk.cyan(
+      `\n${localeService.t("branch.currentBranch")}: ${chalk.bold(
+        currentBranch
+      )}\n`
+    )
+  );
+
+  const { selectedBranch } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "selectedBranch",
+      message: localeService.t("branch.selectToMerge"),
+      choices: otherBranches,
+    },
+  ]);
+
+  console.log(
+    chalk.yellow(
+      `\n${localeService
+        .t("branch.mergeInfo")
+        .replace("{source}", selectedBranch)
+        .replace("{target}", currentBranch)}\n`
+    )
+  );
+
+  const { mergeStrategy } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "mergeStrategy",
+      message: localeService.t("branch.selectMergeStrategy"),
+      choices: [
+        {
+          name: localeService.t("branch.fastForward"),
+          value: "ff",
+        },
+        {
+          name: localeService.t("branch.noFastForward"),
+          value: "no-ff",
+        },
+        { name: localeService.t("common.cancel"), value: "cancel" },
+      ],
+    },
+  ]);
+
+  if (mergeStrategy === "cancel") {
+    return;
+  }
+
+  const { confirm } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "confirm",
+      message: localeService.t("branch.confirmMerge"),
+      default: true,
+    },
+  ]);
+
+  if (!confirm) {
+    console.log(chalk.yellow(localeService.t("common.cancelled")));
+    return;
+  }
+
+  try {
+    await gitService.merge(selectedBranch, mergeStrategy === "no-ff");
+    console.log(
+      chalk.green(
+        `\n✅ ${localeService
+          .t("branch.mergeSuccess")
+          .replace("{branch}", selectedBranch)
+          .replace("{current}", currentBranch)}\n`
+      )
+    );
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ ${localeService.t("branch.mergeFailed")}`));
+
+    if (error.message.includes("CONFLICT")) {
+      console.log(
+        chalk.yellow(`\n⚠️  ${localeService.t("branch.mergeConflict")}`)
+      );
+      console.log(chalk.gray(localeService.t("branch.conflictHelp")));
+
+      const { abortMerge } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "abortMerge",
+          message: localeService.t("branch.abortMerge"),
+          default: false,
+        },
+      ]);
+
+      if (abortMerge) {
+        await gitService.mergeAbort();
+        console.log(
+          chalk.green(`\n✅ ${localeService.t("branch.mergeAborted")}`)
+        );
+      }
+    }
+  }
 }

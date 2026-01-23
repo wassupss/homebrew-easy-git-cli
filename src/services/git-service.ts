@@ -59,6 +59,25 @@ export class GitService {
     }
   }
 
+  async reset(): Promise<void> {
+    const spinner = ora("언스테이징 중...").start();
+    try {
+      await this.git.reset();
+      spinner.succeed("모든 파일 언스테이징됨");
+    } catch (error: any) {
+      spinner.fail("언스테이징 실패");
+      throw error;
+    }
+  }
+
+  async unstageFile(file: string): Promise<void> {
+    try {
+      await this.git.unstageFile(file);
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
   async commit(message: string): Promise<void> {
     const spinner = ora("커밋 중...").start();
     try {
@@ -373,5 +392,31 @@ export class GitService {
       spinner.fail("커밋 취소 실패");
       throw error;
     }
+  }
+
+  async merge(branch: string, noFf: boolean = false): Promise<void> {
+    const spinner = ora(`'${branch}' 브랜치 병합 중...`).start();
+    try {
+      await this.git.merge(branch, noFf);
+      spinner.succeed(`'${branch}' 브랜치 병합 완료`);
+    } catch (error: any) {
+      spinner.fail("병합 실패");
+      throw error;
+    }
+  }
+
+  async mergeAbort(): Promise<void> {
+    const spinner = ora("병합 취소 중...").start();
+    try {
+      await this.git.mergeAbort();
+      spinner.succeed("병합 취소됨");
+    } catch (error: any) {
+      spinner.fail("병합 취소 실패");
+      throw error;
+    }
+  }
+
+  async getGraph(maxCount: number = 20): Promise<string> {
+    return await this.git.getGraph(maxCount);
   }
 }
