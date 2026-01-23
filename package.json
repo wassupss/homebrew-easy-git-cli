@@ -1,6 +1,6 @@
 {
   "name": "@wassupsong/easy-git-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An interactive CLI tool to make Git easier to use",
   "main": "dist/index.js",
   "bin": {
