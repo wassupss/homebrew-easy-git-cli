@@ -338,4 +338,20 @@ export class GitExecutor {
   async fetch(): Promise<void> {
     await this.execute("git fetch");
   }
+
+  async rebase(branch: string): Promise<void> {
+    await this.execute(`git rebase ${branch}`);
+  }
+
+  async rebaseContinue(): Promise<void> {
+    await this.execute("git rebase --continue");
+  }
+
+  async rebaseAbort(): Promise<void> {
+    await this.execute("git rebase --abort");
+  }
+
+  async rebaseSkip(): Promise<void> {
+    await this.execute("git rebase --skip");
+  }
 }

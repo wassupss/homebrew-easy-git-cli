@@ -283,4 +283,48 @@ export class GitService {
       throw error;
     }
   }
+
+  async rebase(branch: string): Promise<void> {
+    const spinner = ora(`'${branch}' 브랜치로 rebase 중...`).start();
+    try {
+      await this.git.rebase(branch);
+      spinner.succeed(`'${branch}' 브랜치로 rebase 완료`);
+    } catch (error: any) {
+      spinner.fail("Rebase 실패");
+      throw error;
+    }
+  }
+
+  async rebaseContinue(): Promise<void> {
+    const spinner = ora("Rebase 계속 진행 중...").start();
+    try {
+      await this.git.rebaseContinue();
+      spinner.succeed("Rebase 계속 진행 완료");
+    } catch (error: any) {
+      spinner.fail("Rebase 계속 진행 실패");
+      throw error;
+    }
+  }
+
+  async rebaseAbort(): Promise<void> {
+    const spinner = ora("Rebase 취소 중...").start();
+    try {
+      await this.git.rebaseAbort();
+      spinner.succeed("Rebase 취소됨");
+    } catch (error: any) {
+      spinner.fail("Rebase 취소 실패");
+      throw error;
+    }
+  }
+
+  async rebaseSkip(): Promise<void> {
+    const spinner = ora("Rebase 현재 커밋 건너뛰는 중...").start();
+    try {
+      await this.git.rebaseSkip();
+      spinner.succeed("Rebase 커밋 건너뛰기 완료");
+    } catch (error: any) {
+      spinner.fail("Rebase 건너뛰기 실패");
+      throw error;
+    }
+  }
 }

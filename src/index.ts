@@ -16,6 +16,8 @@ import { handleStash } from "./commands/stash";
 import { handleRemote } from "./commands/remote";
 import { handleClone } from "./commands/clone";
 import { handleCustomCommands, executeCustomCommand } from "./commands/custom";
+import { handlePR } from "./commands/pr";
+import { handleRebase } from "./commands/rebase";
 
 const gitService = new GitService();
 const configService = new ConfigService();
@@ -79,9 +81,11 @@ async function showMainMenu(): Promise<void> {
           { name: "⬆️  푸시 (Push)", value: "push" },
           { name: "⬇️  풀 (Pull)", value: "pull" },
           { name: "🌿 브랜치 관리", value: "branch" },
+          { name: "🔄 Rebase", value: "rebase" },
           { name: "📜 로그 보기", value: "log" },
           { name: "📦 Stash 관리", value: "stash" },
           { name: "🌐 Remote 관리", value: "remote" },
+          { name: "🔀 Pull Request 생성", value: "pr" },
           new inquirer.Separator(),
           { name: "⚡ 커스텀 커맨드", value: "custom" },
           new inquirer.Separator(),
@@ -110,6 +114,9 @@ async function showMainMenu(): Promise<void> {
       case "branch":
         await handleBranch(gitService);
         break;
+      case "rebase":
+        await handleRebase(gitService);
+        break;
       case "log":
         await handleLog(gitService);
         break;
@@ -118,6 +125,9 @@ async function showMainMenu(): Promise<void> {
         break;
       case "remote":
         await handleRemote(gitService);
+        break;
+      case "pr":
+        await handlePR(gitService);
         break;
       case "custom":
         await handleCustomCommands(gitService, configService);

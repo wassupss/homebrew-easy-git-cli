@@ -8,6 +8,7 @@ import { handleCommit } from "./commit";
 import { handlePush } from "./push";
 import { handlePull } from "./pull";
 import { handleStash } from "./stash";
+import { handleRebase } from "./rebase";
 
 export async function executeCustomCommand(
   commandName: string,
@@ -88,6 +89,15 @@ async function executeAction(
         console.log(chalk.green("✅ Stash 복원됨"));
       } else {
         await handleStash(gitService);
+      }
+      break;
+
+    case "rebase":
+      if (action.params?.branch) {
+        await gitService.rebase(action.params.branch);
+        console.log(chalk.green("✅ Rebase 완료"));
+      } else {
+        await handleRebase(gitService);
       }
       break;
 
@@ -258,6 +268,7 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
           { name: "푸시 (push)", value: "push" },
           { name: "풀 (pull)", value: "pull" },
           { name: "브랜치 전환 (branch)", value: "branch" },
+          { name: "Rebase", value: "rebase" },
           { name: "Stash 저장 (stash save)", value: "stash-save" },
           { name: "Stash 복원 (stash pop)", value: "stash-pop" },
         ],
@@ -280,6 +291,16 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
       actions.push({ type: "stash", params: { action: "pop" } });
     } else if (actionType === "branch") {
       actions.push({ type: "branch", params: { action: "switch" } });
+    } else if (actionType === "rebase") {
+      const { targetBranch } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "targetBranch",
+          message: "Rebase할 대상 브랜치를 입력하세요 (예: main):",
+          default: "main",
+        },
+      ]);
+      actions.push({ type: "rebase", params: { branch: targetBranch } });
     } else {
       actions.push({ type: actionType });
     }
