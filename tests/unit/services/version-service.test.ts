@@ -36,9 +36,10 @@ describe("VersionService", () => {
       versionService.displayVersion();
 
       expect(consoleSpy).toHaveBeenCalled();
-      const output = consoleSpy.mock.calls[0][0];
-      expect(output).toContain("Easy Git");
-      expect(output).toMatch(/\d+\.\d+\.\d+/);
+      // 모든 출력을 합쳐서 확인
+      const allOutput = consoleSpy.mock.calls.map((call) => call[0]).join("\n");
+      expect(allOutput).toContain("Easy Git");
+      expect(allOutput).toMatch(/\d+\.\d+\.\d+/);
     });
   });
 
