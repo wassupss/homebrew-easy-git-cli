@@ -15,29 +15,42 @@ import { handleLog } from "./commands/log";
 import { handleStash } from "./commands/stash";
 import { handleRemote } from "./commands/remote";
 import { handleClone } from "./commands/clone";
-import { handleCustomCommands, executeCustomCommand } from "./commands/custom";
+import {
+  handleCustomCommands,
+  executeCustomCommand,
+  handleSettings,
+} from "./commands/custom";
 import { handlePR } from "./commands/pr";
 import { handleRebase } from "./commands/rebase";
 import { handleRollback } from "./commands/rollback";
 import { localeService } from "./services/locale-service";
 import { versionService } from "./services/version-service";
+import { getSafePageSize } from "./utils/terminal-helper";
 
 const gitService = new GitService();
 const configService = new ConfigService();
 
 async function displayWelcome() {
-  const welcome = boxen(
-    chalk.bold.cyan("Easy Git") +
-      "\n\n" +
-      chalk.gray(localeService.t("menu.welcome")),
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: "round",
-      borderColor: "cyan",
-    }
-  );
-  console.log(welcome);
+  // 터미널 높이 확인
+  const terminalHeight = process.stdout.rows || 24;
+
+  // 터미널이 작으면 간단한 버전, 크면 박스 버전
+  if (terminalHeight < 15) {
+    console.log(chalk.bold.cyan("\n🚀 Easy Git\n"));
+  } else {
+    const welcome = boxen(
+      chalk.bold.cyan("Easy Git") +
+        "\n\n" +
+        chalk.gray(localeService.t("menu.welcome")),
+      {
+        padding: 1,
+        margin: 0, // margin을 0으로 줄임
+        borderStyle: "round",
+        borderColor: "cyan",
+      }
+    );
+    console.log("\n" + welcome);
+  }
 }
 
 async function handleLanguageSettings(): Promise<void> {
@@ -130,10 +143,11 @@ async function showMainMenu(): Promise<void> {
           new inquirer.Separator(),
           { name: localeService.t("menu.custom"), value: "custom" },
           { name: localeService.t("menu.language"), value: "language" },
+          { name: "⚙️  설정", value: "settings" },
           new inquirer.Separator(),
           { name: localeService.t("menu.exit"), value: "exit" },
         ],
-        pageSize: 15,
+        pageSize: getSafePageSize(15, 5),
       },
     ]);
 
@@ -176,6 +190,9 @@ async function showMainMenu(): Promise<void> {
         break;
       case "language":
         await handleLanguageSettings();
+        break;
+      case "settings":
+        await handleSettings(configService);
         break;
       case "exit":
         console.log(chalk.cyan(`\n👋 ${localeService.t("menu.goodbye")}\n`));

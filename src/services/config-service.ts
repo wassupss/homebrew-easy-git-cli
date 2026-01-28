@@ -109,21 +109,16 @@ export class ConfigService {
   }
 
   public addCustomCommand(command: CustomCommand): void {
-    const existingIndex = this.config.customCommands.findIndex(
-      (cmd) => cmd.name === command.name
+    // 중복 제거: 같은 이름의 커맨드가 있으면 모두 제거
+    this.config.customCommands = this.config.customCommands.filter(
+      (cmd) => cmd.name !== command.name
     );
 
-    if (existingIndex >= 0) {
-      this.config.customCommands[existingIndex] = command;
-      console.log(
-        chalk.yellow(`⚠️  기존 커맨드 '${command.name}'을 덮어씌웠습니다.`)
-      );
-    } else {
-      this.config.customCommands.push(command);
-      console.log(
-        chalk.green(`✅ 커스텀 커맨드 '${command.name}'이 추가되었습니다.`)
-      );
-    }
+    // 새 커맨드 추가
+    this.config.customCommands.push(command);
+    console.log(
+      chalk.green(`✅ 커스텀 커맨드 '${command.name}'이 추가되었습니다.`)
+    );
 
     this.saveConfig();
   }

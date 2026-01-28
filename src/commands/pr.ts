@@ -53,7 +53,7 @@ export async function handlePR(gitService: GitService): Promise<void> {
   }
 }
 
-async function createPR(gitService: GitService): Promise<void> {
+export async function createPR(gitService: GitService): Promise<void> {
   try {
     // 현재 브랜치 확인
     const currentBranch = await gitService.getCurrentBranch();

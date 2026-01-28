@@ -7,8 +7,12 @@ import * as os from "os";
 describe("GitService Integration Tests", () => {
   let testDir: string;
   let gitService: GitService;
+  let originalDir: string;
 
   beforeAll(() => {
+    // 현재 디렉토리 저장
+    originalDir = process.cwd();
+
     // 임시 디렉토리 생성
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), "git-test-"));
     process.chdir(testDir);
@@ -27,6 +31,9 @@ describe("GitService Integration Tests", () => {
   });
 
   afterAll(() => {
+    // 원래 디렉토리로 복귀
+    process.chdir(originalDir);
+
     // 테스트 디렉토리 정리
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });

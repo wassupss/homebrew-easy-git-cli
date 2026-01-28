@@ -11,8 +11,9 @@ import { handleStash } from "./stash";
 import { handleRebase } from "./rebase";
 import { handleRollback } from "./rollback";
 import { handleBranch } from "./branch";
-import { handlePR } from "./pr";
+import { handlePR, createPR, viewPRList, openPRHome } from "./pr";
 import { localeService } from "../services/locale-service";
+import { getSafePageSize } from "../utils/terminal-helper";
 
 export async function executeCustomCommand(
   commandName: string,
@@ -131,6 +132,23 @@ async function executeAction(
             }`
           )
         );
+      } else {
+        // 실행 시 입력 받기
+        const { branchName } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "branchName",
+            message: "생성할 브랜치 이름을 입력하세요:",
+            validate: (input) =>
+              input.trim() ? true : "브랜치 이름은 필수입니다",
+          },
+        ]);
+        await gitService.createBranch(branchName);
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchCreated")}: ${branchName}`
+          )
+        );
       }
       break;
 
@@ -145,6 +163,42 @@ async function executeAction(
             `✅ ${localeService.t("custom.branchDeleted")}: ${
               action.params.name
             }`
+          )
+        );
+      } else {
+        // 실행 시 입력 받기
+        const branches = await gitService.getBranches();
+        const branchList = Object.keys(branches.branches).filter(
+          (name) => !branches.branches[name].current
+        );
+
+        if (branchList.length === 0) {
+          console.log(chalk.yellow("삭제할 브랜치가 없습니다."));
+          break;
+        }
+
+        const { branchName } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "branchName",
+            message: "삭제할 브랜치를 선택하세요:",
+            choices: branchList,
+          },
+        ]);
+
+        const { force } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "force",
+            message: "강제 삭제하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        await gitService.deleteBranch(branchName, force);
+        console.log(
+          chalk.green(
+            `✅ ${localeService.t("custom.branchDeleted")}: ${branchName}`
           )
         );
       }
@@ -213,6 +267,21 @@ async function executeAction(
         console.log(
           chalk.green(`✅ ${localeService.t("custom.revertComplete")}`)
         );
+      } else {
+        // 실행 시 입력 받기
+        const { commitHash } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "commitHash",
+            message: "되돌릴 커밋 해시를 입력하세요:",
+            validate: (input) =>
+              input.trim() ? true : "커밋 해시는 필수입니다",
+          },
+        ]);
+        await gitService.revert(commitHash);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.revertComplete")}`)
+        );
       }
       break;
 
@@ -248,12 +317,58 @@ async function executeAction(
       await handlePR(gitService);
       break;
 
+    case "pr-create":
+      await createPR(gitService);
+      break;
+
+    case "pr-list":
+      await viewPRList(gitService);
+      break;
+
+    case "pr-open":
+      await openPRHome(gitService);
+      break;
+
     case "merge":
       if (action.params?.branch) {
         await gitService.merge(
           action.params.branch,
           action.params?.noFf || false
         );
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.mergeComplete")}`)
+        );
+      } else {
+        // 실행 시 입력 받기
+        const branches = await gitService.getBranches();
+        const branchList = Object.keys(branches.branches).filter(
+          (name) => !branches.branches[name].current
+        );
+
+        if (branchList.length === 0) {
+          console.log(chalk.yellow("병합할 브랜치가 없습니다."));
+          break;
+        }
+
+        const { branchName } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "branchName",
+            message: "병합할 브랜치를 선택하세요:",
+            choices: branchList,
+          },
+        ]);
+
+        const { noFf } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "noFf",
+            message: "No Fast-Forward 병합을 사용하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        await gitService.merge(branchName, noFf);
         console.log(
           chalk.green(`✅ ${localeService.t("custom.mergeComplete")}`)
         );
@@ -301,6 +416,26 @@ async function executeAction(
           chalk.green(
             `✅ ${localeService.t("custom.tagCreated")}: ${action.params.name}`
           )
+        );
+      } else {
+        // 실행 시 입력 받기
+        const { tagName, tagMessage } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "tagName",
+            message: "태그 이름을 입력하세요:",
+            validate: (input) =>
+              input.trim() ? true : "태그 이름은 필수입니다",
+          },
+          {
+            type: "input",
+            name: "tagMessage",
+            message: "태그 메시지 (선택사항, 엔터로 건너뛰기):",
+          },
+        ]);
+        await gitService.createTag(tagName, tagMessage || undefined);
+        console.log(
+          chalk.green(`✅ ${localeService.t("custom.tagCreated")}: ${tagName}`)
         );
       }
       break;
@@ -360,10 +495,9 @@ export async function handleCustomCommands(
           { name: localeService.t("custom.list"), value: "list" },
           { name: localeService.t("custom.add"), value: "add" },
           { name: localeService.t("custom.remove"), value: "remove" },
-          { name: localeService.t("custom.settings"), value: "settings" },
-          { name: localeService.t("custom.reset"), value: "reset" },
           { name: localeService.t("common.back"), value: "back" },
         ],
+        pageSize: getSafePageSize(10, 5),
       },
     ]);
 
@@ -383,12 +517,6 @@ export async function handleCustomCommands(
         break;
       case "remove":
         await removeCustomCommand(configService);
-        break;
-      case "settings":
-        showSettings(configService);
-        break;
-      case "reset":
-        await resetSettings(configService);
         break;
     }
   }
@@ -414,6 +542,7 @@ async function executeCustomCommandInteractive(
         name: `${cmd.name} - ${cmd.description}`,
         value: cmd.name,
       })),
+      pageSize: getSafePageSize(10, 5),
     },
   ]);
 
@@ -477,272 +606,431 @@ async function addCustomCommand(configService: ConfigService): Promise<void> {
   let addMore = true;
 
   while (addMore) {
-    const { actionType } = await inquirer.prompt([
+    // 먼저 카테고리 선택
+    const categoryChoices = [
+      { name: "📊 기본 작업", value: "basic" },
+      { name: "🌿 브랜치 관리", value: "branch" },
+      { name: "📦 스태시", value: "stash" },
+      { name: "🔄 고급 작업", value: "advanced" },
+      { name: "🔧 PR 작업", value: "pr" },
+      { name: "📝 메뉴 열기", value: "menu" },
+    ];
+
+    // 액션이 하나라도 있으면 완료 옵션 추가
+    if (actions.length > 0) {
+      categoryChoices.push({ name: "✅ 완료 (저장하기)", value: "done" });
+    }
+    categoryChoices.push({
+      name: localeService.t("common.back"),
+      value: "back",
+    });
+
+    const { category } = await inquirer.prompt([
       {
         type: "list",
-        name: "actionType",
-        message: `${localeService.t("custom.selectActionType")} ${
-          actions.length + 1
-        }`,
-        choices: [
+        name: "category",
+        message: `액션 카테고리를 선택하세요 (${actions.length + 1}번째):`,
+        choices: categoryChoices,
+        pageSize: getSafePageSize(10, 5),
+      },
+    ]);
+
+    // 뒤로가기 선택 시
+    if (category === "back") {
+      console.log(chalk.yellow(localeService.t("common.cancelled")));
+      return;
+    }
+
+    // 완료 선택 시
+    if (category === "done") {
+      break;
+    }
+
+    let actionChoices: any[] = [];
+
+    // 카테고리별 액션 목록
+    switch (category) {
+      case "basic":
+        actionChoices = [
           { name: "📊 상태 보기", value: "status" },
-          { name: "➕ 파일 추가", value: "add" },
-          { name: "📝 커밋 메뉴", value: "commit" },
+          { name: "➕ 파일 추가 메뉴", value: "add" },
+          { name: "➕ 모든 파일 추가", value: "add-all" },
           { name: "💾 커밋 생성", value: "create-commit" },
-          { name: "⬆️  푸시", value: "push" },
-          { name: "⬇️  풀", value: "pull" },
-          { name: "🌿 브랜치 메뉴", value: "branch" },
+          { name: "⬆️  푸시 메뉴", value: "push" },
+          { name: "⬇️  풀 메뉴", value: "pull" },
+          { name: "📥 페치", value: "fetch" },
+        ];
+        break;
+
+      case "branch":
+        actionChoices = [
+          { name: "🌿 브랜치 메뉴 (전체)", value: "branch" },
           { name: "🔀 브랜치 전환", value: "branch-switch" },
           { name: "➕ 브랜치 생성", value: "branch-create" },
           { name: "🗑️  브랜치 삭제", value: "branch-delete" },
-          { name: "📦 스태시 메뉴", value: "stash" },
+          { name: "🔀 병합", value: "merge" },
+        ];
+        break;
+
+      case "stash":
+        actionChoices = [
+          { name: "📦 스태시 메뉴 (전체)", value: "stash" },
           { name: "💾 스태시 저장", value: "stash-save" },
           { name: "📤 스태시 복원", value: "stash-pop" },
           { name: "📋 스태시 목록", value: "stash-list" },
           { name: "🗑️  스태시 삭제", value: "stash-drop" },
           { name: "🧹 스태시 전체삭제", value: "stash-clear" },
+        ];
+        break;
+
+      case "advanced":
+        actionChoices = [
           { name: "🔄 리베이스 메뉴", value: "rebase" },
           { name: "🔄 리베이스 실행", value: "rebase-branch" },
           { name: "↩️  커밋 되돌리기", value: "revert" },
-          { name: "🔙 리셋", value: "reset" },
+          { name: "🔙 Soft Reset", value: "reset-soft" },
+          { name: "🔙 Mixed Reset", value: "reset-mixed" },
+          { name: "🔙 Hard Reset", value: "reset-hard" },
           { name: "🗑️  변경사항 버리기", value: "discard" },
-          { name: "🔀 병합", value: "merge" },
-          { name: "📥 페치", value: "fetch" },
           { name: "🏷️  태그 생성", value: "tag" },
-          { name: "🔧 PR 메뉴", value: "pr" },
           { name: "⏮️  롤백 메뉴", value: "rollback" },
+        ];
+        break;
+
+      case "pr":
+        actionChoices = [
+          { name: "🔧 PR 메뉴 (전체)", value: "pr" },
+          { name: "🆕 PR 생성", value: "pr-create" },
+          { name: "📋 PR 목록", value: "pr-list" },
+          { name: "🏠 PR 홈페이지 열기", value: "pr-open" },
+        ];
+        break;
+
+      case "menu":
+        actionChoices = [
+          { name: "📝 커밋 메뉴", value: "commit" },
           { name: "🌳 브랜치 관리 메뉴", value: "branch-management" },
-        ],
+        ];
+        break;
+    }
+
+    // 모든 카테고리에 뒤로가기 추가
+    actionChoices.push({ name: localeService.t("common.back"), value: "back" });
+
+    const { actionType } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "actionType",
+        message: "실행할 액션을 선택하세요:",
+        choices: actionChoices,
+        pageSize: getSafePageSize(12, 5),
       },
     ]);
 
-    if (actionType === "add") {
-      const { addAll } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "addAll",
-          message: localeService.t("custom.addAllFiles"),
-          default: true,
-        },
-      ]);
-      actions.push({ type: "add", params: { all: addAll } });
-    } else if (actionType === "create-commit") {
-      const { commitMessage } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "commitMessage",
-          message: "커밋 메시지를 입력하세요:",
-          validate: (input) =>
-            input.trim() ? true : "커밋 메시지는 필수입니다",
-        },
-      ]);
-      actions.push({
-        type: "create-commit",
-        params: { message: commitMessage },
-      });
-    } else if (actionType === "commit") {
-      actions.push({ type: "commit" });
-    } else if (actionType === "stash-save") {
-      const { stashMessage } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "stashMessage",
-          message: "스태시 메시지 (선택사항):",
-        },
-      ]);
-      actions.push({
-        type: "stash-save",
-        params: stashMessage ? { message: stashMessage } : {},
-      });
-    } else if (actionType === "stash-pop") {
-      actions.push({ type: "stash-pop" });
-    } else if (actionType === "stash-list") {
-      actions.push({ type: "stash-list" });
-    } else if (actionType === "stash-drop") {
-      const { stashIndex } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "stashIndex",
-          message: "삭제할 스태시 인덱스:",
-          validate: (input) => {
-            const num = parseInt(input);
-            return !isNaN(num) && num >= 0
-              ? true
-              : "유효한 인덱스를 입력하세요";
-          },
-        },
-      ]);
-      actions.push({
-        type: "stash-drop",
-        params: { index: parseInt(stashIndex) },
-      });
-    } else if (actionType === "stash-clear") {
-      actions.push({ type: "stash-clear" });
-    } else if (actionType === "stash") {
-      actions.push({ type: "stash" });
-    } else if (actionType === "branch-switch") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: "전환할 브랜치 이름 (비워두면 선택 메뉴):",
-        },
-      ]);
-      actions.push({
-        type: "branch-switch",
-        params: branchName ? { name: branchName } : {},
-      });
-    } else if (actionType === "branch-create") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: "생성할 브랜치 이름:",
-          validate: (input) =>
-            input.trim() ? true : "브랜치 이름은 필수입니다",
-        },
-      ]);
-      actions.push({ type: "branch-create", params: { name: branchName } });
-    } else if (actionType === "branch-delete") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: "삭제할 브랜치 이름:",
-          validate: (input) =>
-            input.trim() ? true : "브랜치 이름은 필수입니다",
-        },
-      ]);
-      const { force } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "force",
-          message: "강제 삭제하시겠습니까?",
-          default: false,
-        },
-      ]);
-      actions.push({
-        type: "branch-delete",
-        params: { name: branchName, force },
-      });
-    } else if (actionType === "branch") {
-      actions.push({ type: "branch" });
-    } else if (actionType === "rebase-branch") {
-      const { targetBranch } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "targetBranch",
-          message: localeService.t("custom.enterTargetBranch"),
-          default: "main",
-        },
-      ]);
-      actions.push({ type: "rebase-branch", params: { branch: targetBranch } });
-    } else if (actionType === "rebase") {
-      actions.push({ type: "rebase" });
-    } else if (actionType === "revert") {
-      const { commitHash } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "commitHash",
-          message: localeService.t("custom.enterCommitHash"),
-          validate: (input) =>
-            input.trim() ? true : localeService.t("custom.commitHashRequired"),
-        },
-      ]);
-      actions.push({ type: "revert", params: { commitHash } });
-    } else if (actionType === "reset") {
-      const { resetType } = await inquirer.prompt([
-        {
-          type: "list",
-          name: "resetType",
-          message: localeService.t("custom.selectResetType"),
-          choices: [
-            { name: localeService.t("custom.resetSoft"), value: "soft" },
-            { name: localeService.t("custom.resetMixed"), value: "mixed" },
-            { name: localeService.t("custom.resetHard"), value: "hard" },
-          ],
-        },
-      ]);
-      actions.push({ type: "reset", params: { type: resetType } });
-    } else if (actionType === "discard") {
-      const { discardType } = await inquirer.prompt([
-        {
-          type: "list",
-          name: "discardType",
-          message: localeService.t("custom.selectDiscardType"),
-          choices: [
-            { name: localeService.t("custom.discardAll"), value: "all" },
-            {
-              name: localeService.t("custom.discardTracked"),
-              value: "tracked",
-            },
-          ],
-        },
-      ]);
-      actions.push({
-        type: "discard",
-        params: { type: discardType, files: [] },
-      });
-    } else if (actionType === "merge") {
-      const { branchName } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "branchName",
-          message: localeService.t("custom.enterMergeBranch"),
-          validate: (input) =>
-            input.trim() ? true : localeService.t("custom.branchRequired"),
-        },
-      ]);
-      const { noFf } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "noFf",
-          message: localeService.t("custom.useNoFf"),
-          default: false,
-        },
-      ]);
-      actions.push({ type: "merge", params: { branch: branchName, noFf } });
-    } else if (actionType === "fetch") {
-      actions.push({ type: "fetch" });
-    } else if (actionType === "tag") {
-      const { tagName, tagMessage } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "tagName",
-          message: localeService.t("custom.enterTagName"),
-          validate: (input) =>
-            input.trim() ? true : localeService.t("custom.tagRequired"),
-        },
-        {
-          type: "input",
-          name: "tagMessage",
-          message: localeService.t("custom.enterTagMessage"),
-        },
-      ]);
-      actions.push({
-        type: "tag",
-        params: { name: tagName, message: tagMessage || undefined },
-      });
-    } else if (actionType === "pr") {
-      actions.push({ type: "pr" });
-    } else if (actionType === "rollback") {
-      actions.push({ type: "rollback" });
-    } else if (actionType === "branch-management") {
-      actions.push({ type: "branch-management" });
-    } else {
-      actions.push({ type: actionType });
+    // 뒤로가기 선택 시 카테고리 선택으로 돌아가기
+    if (actionType === "back") {
+      continue;
     }
+
+    // 액션별 파라미터 처리 - 필요한 입력만 받기
+    switch (actionType) {
+      case "add":
+      case "add-all":
+        if (actionType === "add-all") {
+          actions.push({ type: "add", params: { all: true } });
+        } else {
+          actions.push({ type: "add", params: {} });
+        }
+        break;
+
+      case "create-commit":
+        const { hasMessage } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "hasMessage",
+            message: "커밋 메시지를 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (hasMessage) {
+          const { commitMessage } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "commitMessage",
+              message: "커밋 메시지:",
+              validate: (input) =>
+                input.trim() ? true : "커밋 메시지는 필수입니다",
+            },
+          ]);
+          actions.push({
+            type: "create-commit",
+            params: { message: commitMessage },
+          });
+        } else {
+          actions.push({ type: "create-commit", params: {} });
+        }
+        break;
+
+      case "branch-switch":
+        const { presetBranch } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetBranch",
+            message: "브랜치 이름을 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetBranch) {
+          const { branchName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "branchName",
+              message: "전환할 브랜치 이름:",
+              validate: (input) =>
+                input.trim() ? true : "브랜치 이름은 필수입니다",
+            },
+          ]);
+          actions.push({ type: "branch-switch", params: { name: branchName } });
+        } else {
+          actions.push({ type: "branch-switch", params: {} });
+        }
+        break;
+
+      case "branch-create":
+        const { presetCreate } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetCreate",
+            message: "브랜치 이름을 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetCreate) {
+          const { branchName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "branchName",
+              message: "생성할 브랜치 이름:",
+              validate: (input) =>
+                input.trim() ? true : "브랜치 이름은 필수입니다",
+            },
+          ]);
+          actions.push({ type: "branch-create", params: { name: branchName } });
+        } else {
+          actions.push({ type: "branch-create", params: {} });
+        }
+        break;
+
+      case "branch-delete":
+        const { presetDelete } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetDelete",
+            message: "브랜치 이름을 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetDelete) {
+          const { branchName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "branchName",
+              message: "삭제할 브랜치 이름:",
+              validate: (input) =>
+                input.trim() ? true : "브랜치 이름은 필수입니다",
+            },
+          ]);
+          const { force } = await inquirer.prompt([
+            {
+              type: "confirm",
+              name: "force",
+              message: "강제 삭제하시겠습니까?",
+              default: false,
+            },
+          ]);
+          actions.push({
+            type: "branch-delete",
+            params: { name: branchName, force },
+          });
+        } else {
+          actions.push({ type: "branch-delete", params: {} });
+        }
+        break;
+
+      case "stash-save":
+        const { stashMessage } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "stashMessage",
+            message: "스태시 메시지 (선택사항, 엔터로 건너뛰기):",
+          },
+        ]);
+        actions.push({
+          type: "stash-save",
+          params: stashMessage ? { message: stashMessage } : {},
+        });
+        break;
+
+      case "stash-drop":
+        // 실행 시 선택하도록
+        actions.push({ type: "stash-drop", params: {} });
+        break;
+
+      case "rebase-branch":
+        const { targetBranch } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "targetBranch",
+            message: "리베이스할 브랜치 이름:",
+            default: "main",
+          },
+        ]);
+        actions.push({
+          type: "rebase-branch",
+          params: { branch: targetBranch },
+        });
+        break;
+
+      case "revert":
+        const { presetCommit } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetCommit",
+            message: "커밋 해시를 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetCommit) {
+          const { commitHash } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "commitHash",
+              message: "되돌릴 커밋 해시:",
+              validate: (input) =>
+                input.trim() ? true : "커밋 해시는 필수입니다",
+            },
+          ]);
+          actions.push({ type: "revert", params: { commitHash } });
+        } else {
+          actions.push({ type: "revert", params: {} });
+        }
+        break;
+
+      case "reset-soft":
+        actions.push({ type: "reset", params: { type: "soft" } });
+        break;
+
+      case "reset-mixed":
+        actions.push({ type: "reset", params: { type: "mixed" } });
+        break;
+
+      case "reset-hard":
+        actions.push({ type: "reset", params: { type: "hard" } });
+        break;
+
+      case "merge":
+        const { presetMerge } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetMerge",
+            message: "병합할 브랜치를 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetMerge) {
+          const { branchName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "branchName",
+              message: "병합할 브랜치 이름:",
+              validate: (input) =>
+                input.trim() ? true : "브랜치 이름은 필수입니다",
+            },
+          ]);
+          const { noFf } = await inquirer.prompt([
+            {
+              type: "confirm",
+              name: "noFf",
+              message: "No Fast-Forward 병합을 사용하시겠습니까?",
+              default: false,
+            },
+          ]);
+          actions.push({ type: "merge", params: { branch: branchName, noFf } });
+        } else {
+          actions.push({ type: "merge", params: {} });
+        }
+        break;
+
+      case "tag":
+        const { presetTag } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "presetTag",
+            message: "태그 이름을 미리 설정하시겠습니까?",
+            default: false,
+          },
+        ]);
+
+        if (presetTag) {
+          const { tagName, tagMessage } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "tagName",
+              message: "태그 이름:",
+              validate: (input) =>
+                input.trim() ? true : "태그 이름은 필수입니다",
+            },
+            {
+              type: "input",
+              name: "tagMessage",
+              message: "태그 메시지 (선택사항):",
+            },
+          ]);
+          actions.push({
+            type: "tag",
+            params: { name: tagName, message: tagMessage || undefined },
+          });
+        } else {
+          actions.push({ type: "tag", params: {} });
+        }
+        break;
+
+      // 나머지는 파라미터 없이 바로 추가
+      default:
+        actions.push({ type: actionType });
+        break;
+    }
+
+    console.log(chalk.gray(`\n✓ ${actionType} 액션이 추가되었습니다.\n`));
 
     const { continue: continueAdding } = await inquirer.prompt([
       {
-        type: "confirm",
+        type: "list",
         name: "continue",
-        message: localeService.t("custom.addMoreActions"),
+        message: "다음 작업을 선택하세요:",
+        choices: [
+          { name: "➕ 다른 액션 추가", value: true },
+          { name: "✅ 완료 (저장하기)", value: false },
+        ],
         default: false,
       },
     ]);
 
     addMore = continueAdding;
+  }
+
+  // 액션이 하나도 추가되지 않은 경우
+  if (actions.length === 0) {
+    console.log(
+      chalk.yellow("\n⚠️  액션이 추가되지 않아 커맨드를 저장하지 않습니다.")
+    );
+    return;
   }
 
   const newCommand: CustomCommand = { name, description, actions };
@@ -773,6 +1061,7 @@ async function removeCustomCommand(
         name: `${cmd.name} - ${cmd.description}`,
         value: cmd.name,
       })),
+      pageSize: getSafePageSize(10, 5),
     },
   ]);
 
@@ -794,56 +1083,120 @@ async function removeCustomCommand(
   }
 }
 
-function showSettings(configService: ConfigService): void {
+export function showSettings(configService: ConfigService): void {
   const config = configService.getConfig();
 
-  console.log(
-    chalk.cyan.bold(`\n${localeService.t("custom.settingsTitle")}\n`)
-  );
-  console.log(
-    chalk.white(
-      `${localeService.t("custom.defaultBranch")} ${chalk.bold(
-        config.defaultBranch
-      )}`
-    )
-  );
+  console.log(chalk.cyan.bold(`\n⚙️  Easy Git 설정\n`));
+  console.log(chalk.white(`기본 브랜치: ${chalk.bold(config.defaultBranch)}`));
   console.log(
     chalk.white(
-      `${localeService.t("custom.autoStash")} ${
-        config.autoStash ? chalk.green("ON") : chalk.gray("OFF")
+      `자동 Stash: ${
+        config.autoStash ? chalk.green("활성화") : chalk.gray("비활성화")
       }`
     )
   );
   console.log(
     chalk.white(
-      `${localeService.t("custom.autoPull")} ${
-        config.autoPullOnBranchSwitch ? chalk.green("ON") : chalk.gray("OFF")
+      `브랜치 전환시 자동 Pull: ${
+        config.autoPullOnBranchSwitch
+          ? chalk.green("활성화")
+          : chalk.gray("비활성화")
       }`
     )
   );
   console.log(
     chalk.white(
-      `${localeService.t("custom.commandCount")} ${chalk.bold(
-        config.customCommands.length
-      )}`
+      `커스텀 커맨드 개수: ${chalk.bold(config.customCommands.length)}`
     )
   );
   console.log();
 }
 
-async function resetSettings(configService: ConfigService): Promise<void> {
-  const { confirm } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "confirm",
-      message: localeService.t("custom.confirmReset"),
-      default: false,
-    },
-  ]);
+export async function handleSettings(
+  configService: ConfigService
+): Promise<void> {
+  while (true) {
+    showSettings(configService);
 
-  if (confirm) {
-    configService.resetToDefault();
-  } else {
-    console.log(chalk.yellow(localeService.t("common.cancelled")));
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "설정 작업을 선택하세요:",
+        choices: [
+          { name: "🔧 기본 브랜치 변경", value: "default-branch" },
+          { name: "📦 자동 Stash 토글", value: "auto-stash" },
+          { name: "⬇️  자동 Pull 토글", value: "auto-pull" },
+          { name: "🔄 설정 초기화", value: "reset" },
+          { name: localeService.t("common.back"), value: "back" },
+        ],
+        pageSize: getSafePageSize(10, 5),
+      },
+    ]);
+
+    if (action === "back") {
+      return;
+    }
+
+    switch (action) {
+      case "default-branch":
+        const { branchName } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "branchName",
+            message: "기본 브랜치 이름을 입력하세요:",
+            default: "main",
+          },
+        ]);
+        configService.updateConfig({ defaultBranch: branchName });
+        console.log(
+          chalk.green(`✅ 기본 브랜치가 '${branchName}'으로 변경되었습니다.`)
+        );
+        break;
+
+      case "auto-stash":
+        const config1 = configService.getConfig();
+        configService.updateConfig({ autoStash: !config1.autoStash });
+        console.log(
+          chalk.green(
+            `✅ 자동 Stash가 ${
+              !config1.autoStash ? "활성화" : "비활성화"
+            }되었습니다.`
+          )
+        );
+        break;
+
+      case "auto-pull":
+        const config2 = configService.getConfig();
+        configService.updateConfig({
+          autoPullOnBranchSwitch: !config2.autoPullOnBranchSwitch,
+        });
+        console.log(
+          chalk.green(
+            `✅ 자동 Pull이 ${
+              !config2.autoPullOnBranchSwitch ? "활성화" : "비활성화"
+            }되었습니다.`
+          )
+        );
+        break;
+
+      case "reset":
+        const { confirm } = await inquirer.prompt([
+          {
+            type: "confirm",
+            name: "confirm",
+            message:
+              "설정을 초기화하시겠습니까? (모든 커스텀 커맨드가 삭제됩니다)",
+            default: false,
+          },
+        ]);
+
+        if (confirm) {
+          configService.resetToDefault();
+        } else {
+          console.log(chalk.yellow(localeService.t("common.cancelled")));
+        }
+        break;
+    }
   }
 }
