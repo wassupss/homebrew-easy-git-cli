@@ -3,6 +3,7 @@ import path from "path";
 import os from "os";
 import https from "https";
 import chalk from "chalk";
+import boxen from "boxen";
 
 interface VersionCache {
   lastChecked: number;
@@ -181,34 +182,24 @@ export class VersionService {
         await this.checkForUpdates();
 
       if (updateAvailable && latestVersion) {
-        console.log(chalk.yellow(`\n┌${"─".repeat(60)}┐`));
-        console.log(
-          chalk.yellow(`│ 🎉 새로운 버전이 출시되었습니다!${" ".repeat(32)}│`)
-        );
-        console.log(chalk.yellow(`│${" ".repeat(62)}│`));
-        console.log(
-          chalk.yellow(
-            `│ 현재 버전: ${chalk.red(currentVersion)}${" ".repeat(
-              49 - currentVersion.length
-            )}│`
-          )
-        );
-        console.log(
-          chalk.yellow(
-            `│ 최신 버전: ${chalk.green(latestVersion)}${" ".repeat(
-              49 - latestVersion.length
-            )}│`
-          )
-        );
-        console.log(chalk.yellow(`│${" ".repeat(62)}│`));
-        console.log(
-          chalk.yellow(
-            `│ 업데이트: ${chalk.cyan(
-              "npm install -g @wassupsong/easy-git-cli"
-            )}${" ".repeat(14)}│`
-          )
-        );
-        console.log(chalk.yellow(`└${"─".repeat(60)}┘\n`));
+        const message =
+          chalk.yellow.bold("🎉 새로운 버전이 출시되었습니다!\n\n") +
+          chalk.white(`현재 버전: ${chalk.red(currentVersion)}\n`) +
+          chalk.white(`최신 버전: ${chalk.green.bold(latestVersion)}\n\n`) +
+          chalk.gray("업데이트 방법:\n") +
+          chalk.cyan("  npm install -g @wassupsong/easy-git-cli\n") +
+          chalk.gray("또는\n") +
+          chalk.cyan("  brew upgrade easy-git");
+
+        const updateBox = boxen(message, {
+          padding: 1,
+          margin: 1,
+          borderStyle: "round",
+          borderColor: "yellow",
+          align: "center",
+        });
+
+        console.log(updateBox);
       }
     } catch (error) {
       // 업데이트 확인 실패는 조용히 무시

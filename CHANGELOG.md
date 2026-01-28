@@ -10,11 +10,26 @@
 - 🔔 Automatic update notification system (checks once per day)
 - ✅ Version check command (`eg -v` or `eg --version`)
 - 📦 Version caching to avoid excessive API calls
+- 📱 Beautiful boxed update notification with version comparison
+  - Shows current vs latest version
+  - Provides npm and Homebrew update commands
+  - Auto-displays on CLI startup when update available
+- 📏 Smart terminal size detection for better UI adaptation
+  - Dynamic page size adjustment based on terminal height
+  - Compact welcome message for small terminals
+  - Prevents menu overflow on small screens
 - ⚡ Enhanced custom commands with granular action types
   - Separate menu openers vs direct actions (e.g., "커밋 메뉴" vs "커밋 생성")
   - Added stash-list, stash-drop, stash-clear actions
   - Added branch-switch, branch-create, branch-delete actions
   - Added rebase-branch for direct rebase execution
+- 🔙 Back button in custom command creation flow
+  - Category selection: ← Back or ✅ Done
+  - Action selection: ← Back to category
+  - Smart parameter input during action setup or runtime
+- ⚙️ Settings moved to main menu
+  - Separated from custom command menu
+  - Easier access to configuration options
 
 ### Changed
 
@@ -23,6 +38,15 @@
 - Repository renamed to `homebrew-easy-git-cli` for Homebrew tap compatibility
 - Homebrew installation now uses standard tap format: `brew install wassupss/easy-git-cli/easy-git`
 - Custom commands now distinguish between interactive menus and direct actions
+- All inquirer prompts now use dynamic `pageSize` for better terminal compatibility
+- Removed unnecessary confirmations in custom command execution flow
+
+### Fixed
+
+- Duplicate custom command names no longer appear in list
+- Custom command parameters can be preset or entered at runtime
+- Terminal menu overflow on small screens
+- Test suite compatibility with current project structure
 
 ---
 

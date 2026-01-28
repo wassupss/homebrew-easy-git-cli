@@ -16,6 +16,7 @@ An interactive CLI tool to make Git easier to use in terminal.
 - 📦 **Stash Management**: Temporarily save and restore changes
 - 🔀 **Pull Request**: Create PRs and open repository pages (GitHub/GitLab/Bitbucket)
 - 🌐 **Multi-language**: Supports English and Korean (한국어)
+- 🔔 **Auto Update Check**: Notifies you when a new version is available
 
 ## 📦 Installation
 
