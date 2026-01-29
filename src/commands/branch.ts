@@ -73,7 +73,16 @@ async function createNewBranch(gitService: GitService): Promise<void> {
         if (!input.trim()) {
           return localeService.t("branch.nameRequired");
         }
-        if (!/^[a-zA-Z0-9_-]+$/.test(input)) {
+        // Allow alphanumeric, underscore, hyphen, and forward slash for folder structure
+        if (!/^[a-zA-Z0-9_/-]+$/.test(input)) {
+          return localeService.t("branch.nameInvalid");
+        }
+        // Prevent starting or ending with slash, or consecutive slashes
+        if (
+          input.startsWith("/") ||
+          input.endsWith("/") ||
+          input.includes("//")
+        ) {
           return localeService.t("branch.nameInvalid");
         }
         return true;
