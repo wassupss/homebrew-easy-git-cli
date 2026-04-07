@@ -1,8 +1,8 @@
 class EasyGit < Formula
   desc "Interactive CLI tool to make Git easier to use with multi-language support"
   homepage "https://github.com/wassupss/homebrew-easy-git-cli"
-  url "https://registry.npmjs.org/@wassupsong/easy-git-cli/-/easy-git-cli-1.6.2.tgz"
-  sha256 "6a0107402732894cd248ee7478ed0e2f178d65b0c6cfec17d27ac6dae0d3206f"
+  url "https://registry.npmjs.org/@wassupsong/easy-git-cli/-/easy-git-cli-1.6.3.tgz"
+  sha256 "d989903f01471278085edb7f809e4446d014b4e3f5f9f33fb0074f755e6284a3"
   license "MIT"
 
   depends_on "node" => :build
